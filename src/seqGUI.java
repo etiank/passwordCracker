@@ -1,10 +1,7 @@
 import javax.swing.*;
-import javax.swing.border.EmptyBorder;
 import java.awt.*;
 
-public class GUI {
-
-    public static String selectedMode = "";
+public class seqGUI {
 
     public static void GUI() {
         JFrame frame = new JFrame("Brute Force Password Cracker (Sequential)");
@@ -13,9 +10,6 @@ public class GUI {
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         JPanel panel = new JPanel();
-        //panel.setLayout(new FlowLayout());
-        //panel.setLayout(new BoxLayout(panel, BoxLayout.PAGE_AXIS));
-        //panel.setBorder(new EmptyBorder(15, 15, 15, 15));
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
@@ -36,30 +30,31 @@ public class GUI {
         JButton button = new JButton("Crack ▶");
 
         // ADDING TO PANEL
-        panel.add(new JLabel("Enter password hash:"));
-        panel.add(hash_field);
+        panel.add(new JLabel("Enter password hash:")); panel.add(hash_field);
         panel.add(new JLabel("Hashing type:"));
         panel.add(radio_md5); panel.add(radio_sha256);
-        panel.add(new JLabel("Character set:"));
-        panel.add(char_set);
-        panel.add(new JLabel("Password length:"));
-        panel.add(length_slider);
-        panel.add(new JLabel("Progress:"));
-        panel.add(progress);
+        panel.add(new JLabel("Character set:")); panel.add(char_set);
+        panel.add(new JLabel("Password length:")); panel.add(length_slider);
+        panel.add(new JLabel("Progress:")); panel.add(progress);
 
 
         button.addActionListener(e -> {
-            if (radio_md5.isSelected()){
-                selectedMode = "md5";
-            }
-            if (radio_sha256.isSelected()){
-                selectedMode = "sha256";
+            String hash = hash_field.getText();
+            String char_set2 = char_set.getText();
+            int pwd_length = length_slider.getValue();
+            if (pwd_length != 0){
+                if (radio_md5.isSelected()){
+                    Seq.runSeq(hash,"md5", char_set2, pwd_length);
+                }
+                if (radio_sha256.isSelected()){
+                    Seq.runSeq(hash,"sha256", char_set2, pwd_length);
+                }
+            } else {
+                System.out.println("Password length cannot be 0!\n");
             }
         });
 
         panel.add(button);
-
-
         frame.add(panel);
         frame.setVisible(true);
     }
@@ -68,5 +63,8 @@ public class GUI {
 Jtextfield  https://docs.oracle.com/javase/8/docs/api/javax/swing/JTextField.html
 Jslider     https://docs.oracle.com/javase/tutorial/uiswing/components/slider.html
 JProgress   https://docs.oracle.com/javase/8/docs/api/javax/swing/JProgressBar.html
+
+read jtextfield https://stackoverflow.com/questions/36936186/how-to-get-string-from-jtextfield-and-save-it-in-variable
+read jslider    https://stackoverflow.com/questions/16586867/read-the-value-of-a-jslider
 
  */
