@@ -13,9 +13,9 @@ public class seqGUI {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("", 40);
+        JTextField hash_field = new JTextField("72b302bf297a228a75730123efef7c41", 40);
         JRadioButton radio_md5 = new JRadioButton("MD5");
-        JRadioButton radio_sha256 = new JRadioButton("SHA256");
+        JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
         JTextField char_set = new JTextField("[0-9A-Za-z!@#$%^&*()_\\-+=\\[\\]{};:'\",.<>/?\\\\|`~]", 25);
@@ -44,10 +44,10 @@ public class seqGUI {
             int pwd_length = length_slider.getValue();
             if (pwd_length != 0){
                 if (radio_md5.isSelected()){
-                    Seq.runSeq(hash,"md5", char_set2, pwd_length);
+                    Seq.runSeq(hash,"MD5", char_set2, pwd_length);
                 }
                 if (radio_sha256.isSelected()){
-                    Seq.runSeq(hash,"sha256", char_set2, pwd_length);
+                    Seq.runSeq(hash,"SHA-256", char_set2, pwd_length);
                 }
             } else {
                 System.out.println("Password length cannot be 0!\n");
@@ -57,6 +57,9 @@ public class seqGUI {
         panel.add(button);
         frame.add(panel);
         frame.setVisible(true);
+
+
+
     }
 }
 /*
