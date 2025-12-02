@@ -1,5 +1,7 @@
 import javax.swing.*;
 import java.awt.*;
+import java.io.IOException;
+import java.security.NoSuchAlgorithmException;
 
 public class seqGUI {
 
@@ -44,10 +46,22 @@ public class seqGUI {
             int pwd_length = length_slider.getValue();
             if (pwd_length != 0){
                 if (radio_md5.isSelected()){
-                    Seq.runSeq(hash,"MD5", char_set2, pwd_length);
+                    try {
+                        Seq.runSeq(hash,"MD5", char_set2, pwd_length);
+                    } catch (NoSuchAlgorithmException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
                 if (radio_sha256.isSelected()){
-                    Seq.runSeq(hash,"SHA-256", char_set2, pwd_length);
+                    try {
+                        Seq.runSeq(hash,"SHA-256", char_set2, pwd_length);
+                    } catch (NoSuchAlgorithmException ex) {
+                        throw new RuntimeException(ex);
+                    } catch (IOException ex) {
+                        throw new RuntimeException(ex);
+                    }
                 }
             } else {
                 System.out.println("Password length cannot be 0!\n");

@@ -5,37 +5,43 @@ import java.sql.SQLOutput;
 
 public class Seq {
 
-    public static void runSeq(String hash, String hash_type, String char_set, int pwd_length) {
-
+    public static void runSeq(String hash, String hash_type, String char_set, int pwd_length) throws NoSuchAlgorithmException, IOException {
 
         String mystring = "banana";
-        String PATH = "C:\\Users\\Etian\\passwordCracker\\rockyou.txt";
+        String PATH = "C:\\Users\\Etian\\passwordCracker\\dictionary.txt";
 
-        System.out.println(hash + " " + hash_type + " " + char_set + " " + pwd_length);
+        System.out.println(hash + " hash_type " + hash_type + " char_set: " + char_set + " length: " + pwd_length);
 
-        // now we have the hash to compare to the computed hashes ane
-        // need a list of words ane
-        // hash them
-
-        // GET DICTIONARY (ROCKYOU.TXT)
-        // GO THROUGH DICTIONARY
-        // read file, buffered reader?
         BufferedReader rdr;
         try {rdr = new BufferedReader(new FileReader(PATH));
         } catch (FileNotFoundException e) {
             throw new RuntimeException(e);}
 
+        long t0 = System.currentTimeMillis(); long t;
+        int attempts = 1;
+
+        // THE Loop
         String line;
         while (true) {
-            try {
-                if (!((line = rdr.readLine()) != null)) break;
-            } catch (IOException e) {throw new RuntimeException(e);}
-            try {
-                hash_it(rdr.readLine(), hash_type);
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            //System.out.println(line);
+            if (!((line = rdr.readLine()) != null)) break;
+            if (line.length() != pwd_length) continue;
+            //System.out.println("Dictionary entry: " + line);
+            String dict_hash = Hash_it.hash_it(line, hash_type);
+            //System.out.println("input hash: "+hash);
+            //System.out.println("Hashed dictionary entry: " + dict_hash);
+            if (dict_hash.equalsIgnoreCase(hash)) break; // gregor
+            attempts++;
+        }
+
+        t = System.currentTimeMillis() - t0;
+
+        switch (line) {
+            case null:
+                System.out.println("[Dictionary attack] failed.");
+                break;
+            default:
+                System.out.println("[Dictionary attack] success. [pwd]: " + line + " [time] " + t + " ms" + " [attempts]: " + attempts);
+                break;
         }
 
 
