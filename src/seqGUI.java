@@ -7,7 +7,7 @@ public class seqGUI {
 
     public static void GUI() {
         JFrame frame = new JFrame("Brute Force Password Cracker (Sequential)");
-        frame.setSize(600, 400);
+        frame.setSize(600, 200);
         frame.setLocationRelativeTo(null); // na sredi ekrana ce se prav spomnim
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -20,7 +20,7 @@ public class seqGUI {
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[0-9A-Za-z!@#$%^&*()_\\-+=\\[\\]{};:'\",.<>/?\\\\|`~]", 25);
+        JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         JSlider length_slider = new JSlider(0,20,10);
         length_slider.setMajorTickSpacing(5);
         length_slider.setMinorTickSpacing(1);
@@ -29,6 +29,7 @@ public class seqGUI {
         length_slider.setPaintTrack(true);
         length_slider.setSnapToTicks(true);
         JProgressBar progress = new JProgressBar(0,100);
+        progress.setStringPainted(true);
         JButton button = new JButton("Crack ▶");
 
         // ADDING TO PANEL
@@ -43,28 +44,35 @@ public class seqGUI {
         button.addActionListener(e -> {
             String hash = hash_field.getText();
             String char_set2 = char_set.getText();
+            System.out.println("[char set]:"+char_set2+".");
             int pwd_length = length_slider.getValue();
-            if (pwd_length != 0){
+            progress.setValue(0); // restart
+            if (pwd_length != 0 && !char_set2.isEmpty()){
                 if (radio_md5.isSelected()){
-                    try {
-                        Seq.runSeq(hash,"MD5", char_set2, pwd_length);
-                    } catch (NoSuchAlgorithmException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                    new Thread(() -> { // rabi thread kr ce ne samo zamrzne
+                        try {
+                            Seq.runSeq(hash,"MD5", char_set2, pwd_length, progress);
+                        } catch (NoSuchAlgorithmException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }).start();
                 }
-                if (radio_sha256.isSelected()){
-                    try {
-                        Seq.runSeq(hash,"SHA-256", char_set2, pwd_length);
-                    } catch (NoSuchAlgorithmException ex) {
-                        throw new RuntimeException(ex);
-                    } catch (IOException ex) {
-                        throw new RuntimeException(ex);
-                    }
+                if (radio_sha256.isSelected()) {
+                    new Thread(() -> {
+                        try {
+                            Seq.runSeq(hash, "SHA-256", char_set2, pwd_length, progress);
+                        } catch (NoSuchAlgorithmException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
+                    }).start();
                 }
+
             } else {
-                System.out.println("Password length cannot be 0!\n");
+                System.out.println("[ERROR] Password length and character set cannot be null.\n");
             }
         });
 
@@ -74,12 +82,13 @@ public class seqGUI {
 
 
 
-    }
+        }
 }
 /*
 Jtextfield  https://docs.oracle.com/javase/8/docs/api/javax/swing/JTextField.html
 Jslider     https://docs.oracle.com/javase/tutorial/uiswing/components/slider.html
 JProgress   https://docs.oracle.com/javase/8/docs/api/javax/swing/JProgressBar.html
+isEmpty() cuz != "" didnt work  https://www.w3schools.com/java/ref_string_isempty.asp
 
 read jtextfield https://stackoverflow.com/questions/36936186/how-to-get-string-from-jtextfield-and-save-it-in-variable
 read jslider    https://stackoverflow.com/questions/16586867/read-the-value-of-a-jslider
