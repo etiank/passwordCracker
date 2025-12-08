@@ -1,12 +1,7 @@
 import javax.swing.*;
 import java.io.*;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.sql.SQLOutput;
 import java.util.List;
-import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Seq {
@@ -54,12 +49,12 @@ public class Seq {
             if (currentLine.length() != pwd_length) continue;
             if (!pattern.matcher(currentLine).matches()) continue;
             System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
-            String dict_hash = Hash_it.hash_it(currentLine, hash_type);
+            String dict_hash = Functions.hash_it(currentLine, hash_type);
             //System.out.println("input hash: "+hash);
             //System.out.println("Hashed dictionary entry: " + dict_hash);
             if (dict_hash.equalsIgnoreCase(hash)) break; // gregor
             attempts++; currentprogress++;
-            int percent = Hash_it.computeProgress(currentprogress, lines);
+            int percent = Functions.computeProgress(currentprogress, lines);
             SwingUtilities.invokeLater(() -> {
                 progress.setValue(percent);
             });
@@ -70,17 +65,30 @@ public class Seq {
         // outputs
         switch (currentLine) {
             case null:
-                System.out.println("[Dictionary attack] failed. [time]: " + Hash_it.time(t));
-                progress.setValue(100);
+                System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
+                progress.setValue(0);
+                progress.setString("");
                 break;
             default:
                 t = System.currentTimeMillis() - t0;
                 progress.setValue(100);
                 progress.setString("Success");
-                System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Hash_it.time(t) + " \n[attempts]: " + attempts);
+                System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
                 //System.exit(0);
                 break;
         }
+
+        // BRUTE FORCING
+        // take char set
+        // generate password of length n
+
+        List<Character> list_char_set = Functions.toList(char_set);
+        //System.out.println("List char set: " + list_char_set);
+        long possible_combs = (long) Math.pow(list_char_set.size(), pwd_length);
+        System.out.println("Possible brute force combinations: " + possible_combs);
+
+
+
 
         //System.out.println("Jusni praprot");
         //System.out.println("Hash of input is " + hashed_result);

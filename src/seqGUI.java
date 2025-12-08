@@ -22,7 +22,7 @@ public class seqGUI {
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
         JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         JSlider length_slider = new JSlider(0,20,10);
-        length_slider.setMajorTickSpacing(5);
+        length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);
         length_slider.setPaintLabels(true);

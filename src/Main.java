@@ -5,6 +5,7 @@ public class Main {
     public static void main(String[] args) {
 
         // maybe a hash generator class -> add a "Generate random hash" button in GUI
+
         int input = 0;
 
         switch(input) {
