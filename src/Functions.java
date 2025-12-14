@@ -1,11 +1,11 @@
+import javax.swing.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.util.ArrayList;
-import java.util.Formatter;
-import java.util.List;
+import java.util.*;
 
 public class Functions {
 
+    /// Gets string to hash and the hashing alg to use, and returns the digest. ✓
     public static String hash_it(String hash, String hashType) throws NoSuchAlgorithmException {
 
         MessageDigest md = MessageDigest.getInstance(hashType); // initialize it
@@ -21,11 +21,13 @@ public class Functions {
         return output;
     }
 
+    /// Just returns the progress in a percentage to be able to update the JProgressBar. ✓
     public static int computeProgress(long currentProgress, long lines){
         int output = (int) (currentProgress * 100 / lines);
         return output;
     }
 
+    /// Just converts the time from simply ms to also seconds and minutes if applicable ✓
     public static String time(long ms) {
         if (ms < 1000) return ms + "ms.";
 
@@ -37,35 +39,91 @@ public class Functions {
         return "";
     }
 
-    public static List<Character> toList(String char_set){
-
+    /// Gets the regex-style char set definition, expands it and returns a char array ✓
+    public static char[] createCharSet(String input){ // ✓
+        char[] char_set = new char[input.length()];
         List<Character> char_list = new ArrayList<>();
-        //strip brackets
-        String stripped = char_set.replaceAll("[\\[\\]]", "");
+        String stripped_input = input.replaceAll("[\\[\\]]", "");
+        System.out.println("stripped input: " + stripped_input);
 
-        if (char_set.equals(".")) {
-            for (char c = 32; c < 127; c++) { // ASCII chacarters
+        if (input.equals(".")) {    // every character
+            for (char c = 32; c < 127; c++) { // ASCII
                 char_list.add(c);
+                //System.out.print("test" + char_list.get(c-1));
             }
-            return char_list;
+            return toCharArr(char_list);
         }
 
-        for (int i = 0; i < stripped.length(); i++) {
-            char c = stripped.charAt(i);
+        for (int i = 0; i < stripped_input.length(); i++) {
+            char c = stripped_input.charAt(i);
 
-            if (i + 2 < stripped.length() && stripped.charAt(i+1) == '-'){      // ┐
-                char end = stripped.charAt(i+2);                                // │    gpt
-                for (char c1 = c; c1 <= end ; c1++) {                           // │
-                    char_list.add(c1);                                          // │
-                }                                                               // │
-                i += 2;                                                         // │
-            } else {                                                            // │
-                char_list.add(c);                                               // ┘
-            }
+            if (i + 2 < stripped_input.length() && stripped_input.charAt(i + 1) == '-') {   // ┐
+                char end = stripped_input.charAt(i + 2);                                    // │    gpt
+                for (char c1 = c; c1 <= end; c1++) {                                        // │
+                    char_list.add(c1);                                                      // │
+                }                                                                           // │
+                i += 2;                                                                     // │
+            } else  char_list.add(c);                                                       // ┘
         }
-        return char_list;
+        return toCharArr(char_list);
     }
 
-    // MessageDigest         https://www.baeldung.com/java-md5
+    /// The function that converts a character list into a char array ✓
+    public static char[] toCharArr(List<Character> input){ // ✓
+        char[] char_set = new char[input.size()];
+            for (int i = 0; i < input.size(); i++) {
+                char_set[i] = input.get(i);
+            }
+            return char_set;
+    }
+
+    /// Needs to take in the pwd_length, char_set, original hash, hasy_type.
+    /// Iteratively generate string, hash it and compare it to the orignal hash
+    /// andrej predlog btw
+    public static String bruteForceGenerator(int pwd_length, char[] char_set, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
+
+        int[] indices = new int[pwd_length]; // initializing
+        char[] currentGuess = new char[pwd_length];
+        Arrays.fill(currentGuess, char_set[0]);
+
+        while (true){ // compare the current guess
+            String strGuess = new String(currentGuess);
+            System.out.println("guess " + strGuess);
+            if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)){
+
+                return strGuess;}
+
+
+            // Iterate string // odometer
+            int len = pwd_length - 1;
+            while (len >= 0){
+                indices[len]++;
+                if (indices[len] < char_set.length){
+                    currentGuess[len] = char_set[indices[len]];
+                    break;
+                } else {
+                    indices[len] = 0;
+                    currentGuess[len] = char_set[0];
+                    len--;
+                }
+            }
+
+            if(len < 0) break;
+            // TOOO, how to keep track of attempts / return the discovered
+            // password & number of attempts, and compute time (?) ce nisem ze
+
+        }
+
+
+        // update progress bar
+        int percent = Functions.computeProgress(currentProgress, possible_combs);
+        SwingUtilities.invokeLater(() -> {
+            progress.setValue(percent);
+        });
+        //
+    }
+
+
 
 }
+    // MessageDigest         https://www.baeldung.com/java-md5

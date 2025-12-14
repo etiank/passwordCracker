@@ -7,7 +7,7 @@ public class Result {
     public static void showResult(String time, String password) {
 
         JFrame frame = new JFrame("Result");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
         frame.setLocationRelativeTo(null);
         frame.setSize(240, 120);
         JPanel panel = new JPanel();

@@ -44,7 +44,7 @@ public class seqGUI {
         button.addActionListener(e -> {
             String hash = hash_field.getText();
             String char_set2 = char_set.getText();
-            System.out.println("[char set]:"+char_set2+".");
+            System.out.println("[char set]:"+char_set2);
             int pwd_length = length_slider.getValue();
             progress.setValue(0); // restart
             if (pwd_length != 0 && !char_set2.isEmpty()){

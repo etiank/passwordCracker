@@ -1,6 +1,7 @@
 import javax.swing.*;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -15,8 +16,15 @@ public class Seq {
         //System.out.println("Pattern: " + pattern);
         progress.setString("Reading dictionary..");
 
+
         //List<String> fileStream = Files.readAllLines(Paths.get(PATH)); CRASHES BECAUSE IT LOADS THE WHOLE FILE INTO MEMORY FIRST
         //long lines = fileStream.size();
+
+        // Have a string and I need a char[] (bolj efficient);
+        char[] char_set_arr = Functions.createCharSet(char_set); // ✓
+        long possible_combs = (long) Math.pow(char_set_arr.length, pwd_length);
+        //System.out.print("Does this work? ");
+        for (int i = 0; i < char_set_arr.length; i++) {System.out.print( i + " " + char_set_arr[i] + " ");}
 
 //      rockyou.txt = 14344392 lines
         long lines = 0; // kr rabim total lines of n length, ne vse
@@ -38,6 +46,7 @@ public class Seq {
             throw new RuntimeException(e);}
 
         progress.setString("Dictionary attack..");
+
         int attempts = 1;
         long t0 = System.currentTimeMillis(); long t;
 
@@ -48,7 +57,7 @@ public class Seq {
             if (!((currentLine = rdr.readLine()) != null)) break;
             if (currentLine.length() != pwd_length) continue;
             if (!pattern.matcher(currentLine).matches()) continue;
-            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
+            //System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
             String dict_hash = Functions.hash_it(currentLine, hash_type);
             //System.out.println("input hash: "+hash);
             //System.out.println("Hashed dictionary entry: " + dict_hash);
@@ -62,32 +71,80 @@ public class Seq {
 
         t = System.currentTimeMillis() - t0;
 
-        // outputs
+/*
+        // TURN THIS INTO AN IF() PLEASE
         switch (currentLine) {
-            case null:
+            case null:  // Dictionary attack failed, BRUTE FORCE
                 System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
                 progress.setValue(0);
-                progress.setString("");
+                progress.setString("Brute force attack..");
+                Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, t0, progress);
                 break;
-            default:
+
+            default: // Dictionary attack success, END
                 t = System.currentTimeMillis() - t0;
                 progress.setValue(100);
                 progress.setString("Success");
                 System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
-                //System.exit(0);
+                //Result.showResult(Functions.time(t), currentLine);
+
                 break;
         }
+*/
+        if (!currentLine.isEmpty()){
+            t = System.currentTimeMillis() - t0;
+            progress.setValue(100);
+            progress.setString("Success");
+            System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
+        } else {
+            System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
+            progress.setValue(0);
+            progress.setString("Brute force attack..");
+            currentprogress = 0;
+            Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
+            t = System.currentTimeMillis() - t0;
+        }
+
 
         // BRUTE FORCING
         // take char set
         // generate password of length n
+/*
+public static String BruteForce(int pwd_length, char[] char_set,){
 
-        List<Character> list_char_set = Functions.toList(char_set);
+
         //System.out.println("List char set: " + list_char_set);
-        long possible_combs = (long) Math.pow(list_char_set.size(), pwd_length);
+
         System.out.println("Possible brute force combinations: " + possible_combs);
 
+        //Iterable<String> word = Functions.generateString(pwd_length, Arrays.toString(list_char_set));
+        currentprogress = 0;
 
+        for (String password : word) {
+
+            String hash_pwd = Functions.hash_it(hash, hash_type);
+            System.out.println("[" + currentprogress + "]" + hash_pwd);
+            if (hash_pwd.equalsIgnoreCase(hash)) {
+                t = System.currentTimeMillis() - t0;
+                progress.setValue(100);
+                progress.setString("Success");
+                System.out.println("[Brute force attack] success.\n[pwd]: " + password + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
+                break;
+            }
+            attempts++;
+            currentprogress++;
+            int percent2 = Functions.computeProgress(currentprogress, possible_combs);
+            SwingUtilities.invokeLater(() -> {
+                progress.setValue(percent2);
+            });
+
+            //attempt++;
+
+        }
+    }
+
+
+*/
 
 
         //System.out.println("Jusni praprot");
@@ -98,3 +155,4 @@ public class Seq {
 // Burrefered reader    https://docs.oracle.com/javase/8/docs/api/java/io/BufferedReader.html
 //  rockyou.txt     https://github.com/dw0rsec/rockyou.txt
 // read buf rdr     https://www.w3schools.com/java/java_bufferedreader.asp
+// iterable         https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Iterable.html
