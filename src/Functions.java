@@ -44,7 +44,7 @@ public class Functions {
         char[] char_set = new char[input.length()];
         List<Character> char_list = new ArrayList<>();
         String stripped_input = input.replaceAll("[\\[\\]]", "");
-        System.out.println("stripped input: " + stripped_input);
+        //System.out.println("stripped input: " + stripped_input);
 
         if (input.equals(".")) {    // every character
             for (char c = 32; c < 127; c++) { // ASCII
@@ -77,24 +77,23 @@ public class Functions {
             return char_set;
     }
 
-    /// Needs to take in the pwd_length, char_set, original hash, hasy_type.
-    /// Iteratively generate string, hash it and compare it to the orignal hash
-    /// andrej predlog btw
+    /// Needs to take in the pwd_length, char_set, original hash, hasy_type. pa kaj se
+    /// Iteratively generate string, hash it and compare it to the orignal hash: andrej's predlog btw
+    /// Needa return the actual broken Password, n. of Attempts, time?,
     public static String bruteForceGenerator(int pwd_length, char[] char_set, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
 
         int[] indices = new int[pwd_length]; // initializing
         char[] currentGuess = new char[pwd_length];
-        Arrays.fill(currentGuess, char_set[0]);
+        Arrays.fill(currentGuess, char_set[0]); // fill the char arr with the first char in char_set
+        String password = "";
 
         while (true){ // compare the current guess
             String strGuess = new String(currentGuess);
-            System.out.println("guess " + strGuess);
+            //System.out.println("["+attempts + "] guess: " + strGuess + " total combs: " + possible_combs);
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)){
+                password = strGuess; break;}
 
-                return strGuess;}
-
-
-            // Iterate string // odometer
+            // Iterate string
             int len = pwd_length - 1;
             while (len >= 0){
                 indices[len]++;
@@ -107,20 +106,22 @@ public class Functions {
                     len--;
                 }
             }
+            attempts++; currentProgress++;
+            // update progress bar
+            int percent = Functions.computeProgress(currentProgress, possible_combs);
+            SwingUtilities.invokeLater(() -> {
+                progress.setValue(percent);
+            });
 
             if(len < 0) break;
-            // TOOO, how to keep track of attempts / return the discovered
+            // TODO, how to keep track of attempts / return the discovered
             // password & number of attempts, and compute time (?) ce nisem ze
-
         }
 
+        return password + "\n" + attempts;
 
-        // update progress bar
-        int percent = Functions.computeProgress(currentProgress, possible_combs);
-        SwingUtilities.invokeLater(() -> {
-            progress.setValue(percent);
-        });
         //
+
     }
 
 

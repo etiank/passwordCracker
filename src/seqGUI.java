@@ -15,7 +15,7 @@ public class seqGUI {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("72b302bf297a228a75730123efef7c41", 40);
+        JTextField hash_field = new JTextField("84e3bc8f2edc71abb4e22e1163e921c9", 40); // "kljen"
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();

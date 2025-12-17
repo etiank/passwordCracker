@@ -9,7 +9,8 @@ public class Seq {
 
     public static void runSeq(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress) throws NoSuchAlgorithmException, IOException {
 
-        String PATH = "C:\\Users\\Etian\\passwordCracker\\rockyou.txt";
+        //String PATH = "C:\\Users\\Etian\\passwordCracker\\rockyou.txt";
+        String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
         System.out.println("[input hash]: " + hash + " \n[hash_type]: " + hash_type + " \n[char_set]: " + char_set + " \n[length]: " + pwd_length +"\n");
         //long lines = 14344392;
         Pattern pattern = Pattern.compile("^" +char_set + "+$");
@@ -24,7 +25,7 @@ public class Seq {
         char[] char_set_arr = Functions.createCharSet(char_set); // ✓
         long possible_combs = (long) Math.pow(char_set_arr.length, pwd_length);
         //System.out.print("Does this work? ");
-        for (int i = 0; i < char_set_arr.length; i++) {System.out.print( i + " " + char_set_arr[i] + " ");}
+        //for (int i = 0; i < char_set_arr.length; i++) {System.out.print( i + " " + char_set_arr[i] + " ");}
 
 //      rockyou.txt = 14344392 lines
         long lines = 0; // kr rabim total lines of n length, ne vse
@@ -91,7 +92,7 @@ public class Seq {
                 break;
         }
 */
-        if (!currentLine.isEmpty()){
+        if (!((currentLine) == null)){ // how to check if it's null, dio ken
             t = System.currentTimeMillis() - t0;
             progress.setValue(100);
             progress.setString("Success");
@@ -101,8 +102,14 @@ public class Seq {
             progress.setValue(0);
             progress.setString("Brute force attack..");
             currentprogress = 0;
-            Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
+            //System.out.println("[possible combinations]: " + possible_combs);
+            String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
             t = System.currentTimeMillis() - t0;
+            // get password, attempts
+            progress.setValue(100); progress.setString("Success");
+            String[] output = pws_and_attempt.split("\n");
+            System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
+
         }
 
 
