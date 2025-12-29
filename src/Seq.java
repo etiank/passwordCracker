@@ -7,10 +7,10 @@ import java.util.regex.Pattern;
 
 public class Seq {
 
-    public static void runSeq(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress) throws NoSuchAlgorithmException, IOException {
+    public static void runSeq(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH) throws NoSuchAlgorithmException, IOException {
 
         //String PATH = "C:\\Users\\Etian\\passwordCracker\\rockyou.txt";
-        String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
+        //String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
         System.out.println("[input hash]: " + hash + " \n[hash_type]: " + hash_type + " \n[char_set]: " + char_set + " \n[length]: " + pwd_length +"\n");
         //long lines = 14344392;
         Pattern pattern = Pattern.compile("^" +char_set + "+$");
@@ -97,6 +97,7 @@ public class Seq {
             progress.setValue(100);
             progress.setString("Success");
             System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
+            seqGUI.enableButtons();
         } else {
             System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
             progress.setValue(0);
@@ -109,6 +110,7 @@ public class Seq {
             progress.setValue(100); progress.setString("Success");
             String[] output = pws_and_attempt.split("\n");
             System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
+            seqGUI.enableButtons();
 
         }
 

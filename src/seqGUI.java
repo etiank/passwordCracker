@@ -1,9 +1,14 @@
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
 
 public class seqGUI {
+
+    static String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
+    private static JButton button; private static JButton dictionaryButton;
 
     public static void GUI() {
         JFrame frame = new JFrame("Brute Force Password Cracker (Sequential)");
@@ -30,7 +35,8 @@ public class seqGUI {
         length_slider.setSnapToTicks(true);
         JProgressBar progress = new JProgressBar(0,100);
         progress.setStringPainted(true);
-        JButton button = new JButton("Crack ▶");
+        button = new JButton("Crack ▶");
+        dictionaryButton = new JButton("rockyou.txt");
 
         // ADDING TO PANEL
         panel.add(new JLabel("Enter password hash:")); panel.add(hash_field);
@@ -39,6 +45,7 @@ public class seqGUI {
         panel.add(new JLabel("Character set:")); panel.add(char_set);
         panel.add(new JLabel("Password length:")); panel.add(length_slider);
         panel.add(new JLabel("Progress:")); panel.add(progress);
+        panel.add(new JLabel("Select dictionary:")); panel.add(dictionaryButton);
 
 
         button.addActionListener(e -> {
@@ -49,9 +56,10 @@ public class seqGUI {
             progress.setValue(0); // restart
             if (pwd_length != 0 && !char_set2.isEmpty()){
                 if (radio_md5.isSelected()){
+                    button.setEnabled(false); dictionaryButton.setEnabled(false);
                     new Thread(() -> { // rabi thread kr ce ne samo zamrzne
                         try {
-                            Seq.runSeq(hash,"MD5", char_set2, pwd_length, progress);
+                            Seq.runSeq(hash,"MD5", char_set2, pwd_length, progress, PATH);
                         } catch (NoSuchAlgorithmException ex) {
                             throw new RuntimeException(ex);
                         } catch (IOException ex) {
@@ -60,9 +68,10 @@ public class seqGUI {
                     }).start();
                 }
                 if (radio_sha256.isSelected()) {
+                    button.setEnabled(false); dictionaryButton.setEnabled(false);
                     new Thread(() -> {
                         try {
-                            Seq.runSeq(hash, "SHA-256", char_set2, pwd_length, progress);
+                            Seq.runSeq(hash, "SHA-256", char_set2, pwd_length, progress, PATH);
                         } catch (NoSuchAlgorithmException ex) {
                             throw new RuntimeException(ex);
                         } catch (IOException ex) {
@@ -76,12 +85,31 @@ public class seqGUI {
             }
         });
 
+        dictionaryButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent actionEvent) {
+
+                FileDialog fileDialog = new FileDialog((Frame) null, "Select the dictionary to be used.");
+                fileDialog.setVisible(true);
+                PATH = fileDialog.getDirectory() + fileDialog.getFile();
+
+                System.out.println("Selected dictionary: " + PATH);
+
+            }
+        });
+
+
+
         panel.add(button);
         frame.add(panel);
         frame.setVisible(true);
 
 
 
+        }
+
+        public static void enableButtons(){
+            button.setEnabled(true); dictionaryButton.setEnabled(true);
         }
 }
 /*
