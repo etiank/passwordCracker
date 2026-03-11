@@ -20,7 +20,7 @@ public class seqGUI {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("84e3bc8f2edc71abb4e22e1163e921c9", 40); // "kljen"
+        JTextField hash_field = new JTextField("84e3bc8f2edc71abb4e22e1163e921c9", 40); // "kljen" MD5
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
@@ -47,13 +47,16 @@ public class seqGUI {
         panel.add(new JLabel("Progress:")); panel.add(progress);
         panel.add(new JLabel("Select dictionary:")); panel.add(dictionaryButton);
 
-
+        // run button
         button.addActionListener(e -> {
             String hash = hash_field.getText();
             String char_set2 = char_set.getText();
             System.out.println("[char set]:"+char_set2);
             int pwd_length = length_slider.getValue();
             progress.setValue(0); // restart
+
+            // TODO check if dictionary is valid in dictionary select function
+
             if (pwd_length != 0 && !char_set2.isEmpty()){
                 if (radio_md5.isSelected()){
                     button.setEnabled(false); dictionaryButton.setEnabled(false);
@@ -85,15 +88,22 @@ public class seqGUI {
             }
         });
 
+
         dictionaryButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent actionEvent) {
 
                 FileDialog fileDialog = new FileDialog((Frame) null, "Select the dictionary to be used.");
                 fileDialog.setVisible(true);
-                PATH = fileDialog.getDirectory() + fileDialog.getFile();
 
-                System.out.println("Selected dictionary: " + PATH);
+                String selectedFile = fileDialog.getFile();
+
+                if (selectedFile != null){
+                    PATH = fileDialog.getDirectory() + selectedFile;
+                    dictionaryButton.setText(selectedFile);
+                    System.out.println("Selected dictionary: " + PATH);
+                }
+
 
             }
         });

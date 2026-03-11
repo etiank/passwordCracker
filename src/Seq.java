@@ -21,7 +21,7 @@ public class Seq {
         //List<String> fileStream = Files.readAllLines(Paths.get(PATH)); CRASHES BECAUSE IT LOADS THE WHOLE FILE INTO MEMORY FIRST
         //long lines = fileStream.size();
 
-        // Have a string and I need a char[] (bolj efficient);
+        // Have a string and I want a char[] cause it's bolj efficient
         char[] char_set_arr = Functions.createCharSet(char_set); // ✓
         long possible_combs = (long) Math.pow(char_set_arr.length, pwd_length);
         //System.out.print("Does this work? ");
@@ -37,7 +37,7 @@ public class Seq {
                 }
             }
         }
-        //System.out.println("[Total lines]: "+ lines);
+        // System.out.println("[Total lines]: "+ lines);
 
 
         // BUFFERED READER SET-UP
@@ -55,17 +55,17 @@ public class Seq {
         String currentLine;
         long currentprogress = 0;
         while (true) {
-            if (!((currentLine = rdr.readLine()) != null)) break;
-            if (currentLine.length() != pwd_length) continue;
-            if (!pattern.matcher(currentLine).matches()) continue;
-            //System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
+            if (!((currentLine = rdr.readLine()) != null)) break; // break when reached end of dictionary
+            if (currentLine.length() != pwd_length) continue; // skip candidates that are not the right length
+            if (!pattern.matcher(currentLine).matches()) continue; // skip candidates that dont fit the specified char set
+            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
             String dict_hash = Functions.hash_it(currentLine, hash_type);
             //System.out.println("input hash: "+hash);
             //System.out.println("Hashed dictionary entry: " + dict_hash);
-            if (dict_hash.equalsIgnoreCase(hash)) break; // gregor
+            if (dict_hash.equalsIgnoreCase(hash)) break; // gredol
             attempts++; currentprogress++;
             int percent = Functions.computeProgress(currentprogress, lines);
-            SwingUtilities.invokeLater(() -> {
+            SwingUtilities.invokeLater(() -> { // to update the progress bar in the gui
                 progress.setValue(percent);
             });
         }
@@ -91,7 +91,7 @@ public class Seq {
 
                 break;
         }
-*/
+*/          /// If dictionary attack SUCCEEDS
         if (!((currentLine) == null)){ // how to check if it's null, dio ken
             t = System.currentTimeMillis() - t0;
             progress.setValue(100);
@@ -99,11 +99,13 @@ public class Seq {
             System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
             seqGUI.enableButtons();
         } else {
+            /// If dictionary attack FAILS
             System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
             progress.setValue(0);
+            System.out.println("[Brute force attack] started.");
             progress.setString("Brute force attack..");
             currentprogress = 0;
-            //System.out.println("[possible combinations]: " + possible_combs);
+            System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
             String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
             t = System.currentTimeMillis() - t0;
             // get password, attempts
@@ -161,7 +163,7 @@ public static String BruteForce(int pwd_length, char[] char_set,){
     }
 }
 
-// Burrefered reader    https://docs.oracle.com/javase/8/docs/api/java/io/BufferedReader.html
+// Buffered reader    https://docs.oracle.com/javase/8/docs/api/java/io/BufferedReader.html
 //  rockyou.txt     https://github.com/dw0rsec/rockyou.txt
 // read buf rdr     https://www.w3schools.com/java/java_bufferedreader.asp
 // iterable         https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Iterable.html

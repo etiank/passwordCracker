@@ -114,17 +114,10 @@ public class Functions {
             });
 
             if(len < 0) break;
-            // TODO, how to keep track of attempts / return the discovered
-            // password & number of attempts, and compute time (?) ce nisem ze
         }
 
         return password + "\n" + attempts;
-
-        //
-
     }
-
-
 
 }
     // MessageDigest         https://www.baeldung.com/java-md5
