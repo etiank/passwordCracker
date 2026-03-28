@@ -26,6 +26,7 @@ public class seqGUI {
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
         JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
+        //char_set.setToolTipText(". - all [a-z] - lowercase [A-Z] - uppercase [0-9] - numerical");
         JSlider length_slider = new JSlider(0,20,10);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
@@ -54,8 +55,6 @@ public class seqGUI {
             System.out.println("[char set]:"+char_set2);
             int pwd_length = length_slider.getValue();
             progress.setValue(0); // restart
-
-            // TODO check if dictionary is valid in dictionary select function
 
             if (pwd_length != 0 && !char_set2.isEmpty()){
                 if (radio_md5.isSelected()){

@@ -1,8 +1,6 @@
 import javax.swing.*;
 import java.io.*;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
-import java.util.List;
 import java.util.regex.Pattern;
 
 public class Seq {

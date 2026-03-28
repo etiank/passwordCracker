@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Functions {
 
@@ -94,30 +95,77 @@ public class Functions {
                 password = strGuess; break;}
 
             // Iterate string
-            int len = pwd_length - 1;
-            while (len >= 0){
-                indices[len]++;
-                if (indices[len] < char_set.length){
-                    currentGuess[len] = char_set[indices[len]];
+            int i = pwd_length - 1; // start at last char
+            while (i >= 0){ // while password length is not 0
+                indices[i]++; // increment the last (from left to right) char in the indices
+                if (indices[i] < char_set.length){ // if last index didnt yet reach the end of the char_set
+                    currentGuess[i] = char_set[indices[i]]; // update current guess' char with the new char
                     break;
                 } else {
-                    indices[len] = 0;
-                    currentGuess[len] = char_set[0];
-                    len--;
+                    indices[i] = 0;
+                    currentGuess[i] = char_set[0];
+                    i--; // reset and move to the next digit
                 }
             }
-            attempts++; currentProgress++;
-            // update progress bar
+            attempts++; currentProgress++; // update progress bar
+
             int percent = Functions.computeProgress(currentProgress, possible_combs);
             SwingUtilities.invokeLater(() -> {
                 progress.setValue(percent);
             });
 
-            if(len < 0) break;
+            if(i < 0) break; // if this is reached we've been through all possible combinations7
         }
 
         return password + "\n" + attempts;
     }
+
+    ///  PAR
+
+    public static void guiUpdate(AtomicInteger progress){
+
+    }
+
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, int startChar, int stopChar, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
+
+        int[] indices = new int[pwd_length]; // initializing
+        char[] currentGuess = new char[pwd_length];
+        Arrays.fill(currentGuess, char_set[0]); // fill the char arr with the first char in char_set
+        String password = "";
+
+        while (true){ // compare the current guess
+            String strGuess = new String(currentGuess);
+            //System.out.println("["+attempts + "] guess: " + strGuess + " total combs: " + possible_combs);
+            if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)){
+                password = strGuess; break;}
+
+            // Iterate string
+            int i = pwd_length - 1; // start at last char
+            while (i >= 0){ // while password length is not 0
+                indices[i]++; // increment the last (from left to right) char in the indices
+                if (indices[i] < char_set.length){ // if last index didnt yet reach the end of the char_set
+                    currentGuess[i] = char_set[indices[i]]; // update current guess' char with the new char
+                    break;
+                } else {
+                    indices[i] = 0;
+                    currentGuess[i] = char_set[0];
+                    i--; // reset and move to the next digit
+                }
+            }
+            attempts++; currentProgress++; // update progress bar
+
+            int percent = Functions.computeProgress(currentProgress, possible_combs);
+            SwingUtilities.invokeLater(() -> {
+                progress.setValue(percent);
+            });
+
+            if(i < 0) break; // if this is reached we've been through all possible combinations7
+        }
+
+        return password + "\n" + attempts;
+    }
+
+
 
 }
     // MessageDigest         https://www.baeldung.com/java-md5

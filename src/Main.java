@@ -14,7 +14,7 @@ public class Main {
 
         // maybe a hash generator class -> add a "Generate random hash" button in GUI
 
-        int input = 0;
+        int input = 1;
 
         switch(input) {
             case 0:
@@ -22,6 +22,7 @@ public class Main {
                 break;
             case 1:
                 parGUI.GUI();
+                System.out.println("Available processors: " + Runtime.getRuntime().availableProcessors()); //
                 break;
             case 2:
                 // CUDA
