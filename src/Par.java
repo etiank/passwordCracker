@@ -47,29 +47,12 @@ public class Par {
         int attempts = 1;
         long t, t0 = System.currentTimeMillis();
 
-        ///  PARALLEL
-        // - look through dictionary
-        // - create fixed number of threads with executor service
-        // - divide workload into n
-        // - use AtomicInteger to increment progess
-        //      - have one thread
-
-
-
-        int cores = Runtime.getRuntime().availableProcessors()-1; // leaving 1 for obese
-        ExecutorService executorService = Executors.newFixedThreadPool(cores);
-
-
-        AtomicLong totalAttempts = new AtomicLong(attempts);
-        AtomicBoolean found = new AtomicBoolean(false);
-        AtomicInteger progress2 = new AtomicInteger(0);
-        AtomicReference<String> resultPassword = new AtomicReference<>(null);
-        long chunk = char_set.length()/cores;
 
 
 
 
-        /// DICTIONARY ATTACK - Imma leave this one the way it is
+
+        /// DICTIONARY ATTACK - Imma leave this one sequential
         String currentLine;
         long currentprogress = 0;
         while (true) {
@@ -100,6 +83,34 @@ public class Par {
 
         } else {
 
+            ///  PARALLEL
+            // - create fixed number of threads with executor service
+            // - divide workload into n
+            // - use AtomicInteger to increment attempts -> progress
+            //      - have one thread for gui only
+
+            int cores = Runtime.getRuntime().availableProcessors()-1; // leaving 1 core for OS*
+            ExecutorService pool = Executors.newFixedThreadPool(cores);
+
+            AtomicLong attempts2 = new AtomicLong(attempts);
+            AtomicBoolean found = new AtomicBoolean(false);
+            //AtomicReference<String> resultPassword = new AtomicReference<>(null);
+
+            // This is just to divide the char_set_arr (how bug the range is)
+            // such that each threads gets about the same amount of work
+
+            System.out.println("cores: " + "length: " + char_set_arr.length);
+            int[] ranges = Functions.divideChunk(cores, char_set_arr.length);
+
+            System.out.print("The ranges are: ");
+            for (int i = 0; i < ranges.length-1; i++) {
+                System.out.print(ranges[i]+ " ");
+            }
+
+
+            int startChar = 0, endChar = 0; // determine these two
+            String pwd_and_attempt = "";
+
             /// BRUTE FORCE ATTACK
             System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
             progress.setValue(0);
@@ -107,12 +118,19 @@ public class Par {
             progress.setString("Brute force attack..");
             currentprogress = 0;
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
-            String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
+            /// ⚠️⚠⚠
+            for (int i = 0; i < cores; i++) {
+
+                pool.submit(() -> { /*the function*/});
+                //pws_and_attempt = Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, possible_combs, attempts, currentprogress, progress);
+                pool.shutdown();
+            }
+            /// ⚠⚠⚠️
             t = System.currentTimeMillis() - t0;
             // get password, attempts
             progress.setValue(100);
             progress.setString("Success");
-            String[] output = pws_and_attempt.split("\n");
+            String[] output = "pws_and_attempt".split("\n");
             System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
             seqGUI.enableButtons();
 

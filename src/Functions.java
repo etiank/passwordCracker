@@ -126,6 +126,27 @@ public class Functions {
 
     }
 
+    /// This function uses the number of available cores and amount of characters
+    /// in the char_set_arr to compute how big the ranges that are given to each
+    /// thread are.
+    public static int[] divideChunk(int cores, int length){ //6, 26
+        System.out.println("cores: " + "length: " + length);
+        int range = length / cores; // 4.3
+
+        int remainder = length % cores;
+        int[] rangeArr = new int[cores];
+        //int[] remaindersArr = new int[remainder];
+
+        for (int i = 0; i < cores; i++) {
+            // Every core gets the base range
+            // The first 'remainder' cores get +1 extra character
+            rangeArr[i] = range + (i < remainder ? 1 : 0);
+        }
+        return rangeArr;
+
+    }
+
+    // Change this to inlcude startChar & endChar
     public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, int startChar, int stopChar, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
 
         int[] indices = new int[pwd_length]; // initializing
