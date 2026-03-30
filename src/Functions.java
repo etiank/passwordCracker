@@ -3,6 +3,7 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class Functions {
 
@@ -122,15 +123,12 @@ public class Functions {
 
     ///  PAR
 
-    public static void guiUpdate(AtomicInteger progress){
-
-    }
 
     /// This function uses the number of available cores and amount of characters
     /// in the char_set_arr to compute how big the ranges that are given to each
     /// thread are.
     public static int[] divideChunk(int cores, int length){ //6, 26
-        System.out.println("cores: " + "length: " + length);
+        System.out.println("cores: " + cores + " length: " + length);
         int range = length / cores; // 4.3
 
         int remainder = length % cores;
@@ -138,16 +136,42 @@ public class Functions {
         //int[] remaindersArr = new int[remainder];
 
         for (int i = 0; i < cores; i++) {
-            // Every core gets the base range
-            // The first 'remainder' cores get +1 extra character
+            // every core gets remainder cores get an extra character
             rangeArr[i] = range + (i < remainder ? 1 : 0);
         }
         return rangeArr;
+    }
 
+    public static char[][] getRangeBounds(char[] charSet, int[] ranges) {
+        // 0 - startChar, 1 - endChar
+        char[][] bounds = new char[ranges.length][2];
+        int currentIndex = 0;
+
+        for (int i = 0; i < ranges.length; i++) {
+            int currentRangeSize = ranges[i];
+
+            // bounds[x][] - the ranges; ranges[][0/1] - start/end char
+            bounds[i][0] = charSet[currentIndex];
+            bounds[i][1] = charSet[currentIndex + currentRangeSize - 1];
+
+            // move to next range
+            currentIndex += currentRangeSize;
+        }
+        return bounds;
+    }
+
+    ///
+    public static void guiUpdate(AtomicInteger progress){
+
+
+//        SwingUtilities.invokeLater(() -> {
+//            //progress.setValue(percent);
+//        });
     }
 
     // Change this to inlcude startChar & endChar
-    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, int startChar, int stopChar, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
+    ///
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, int startChar, int stopChar, String hash, String hash_type, long possible_combs, AtomicLong attempts, JProgressBar progress) throws NoSuchAlgorithmException {
 
         int[] indices = new int[pwd_length]; // initializing
         char[] currentGuess = new char[pwd_length];
@@ -173,12 +197,9 @@ public class Functions {
                     i--; // reset and move to the next digit
                 }
             }
-            attempts++; currentProgress++; // update progress bar
+            attempts.incrementAndGet(); // update progress bar
 
-            int percent = Functions.computeProgress(currentProgress, possible_combs);
-            SwingUtilities.invokeLater(() -> {
-                progress.setValue(percent);
-            });
+
 
             if(i < 0) break; // if this is reached we've been through all possible combinations7
         }

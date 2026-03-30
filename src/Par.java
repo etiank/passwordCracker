@@ -7,15 +7,12 @@ import java.security.NoSuchAlgorithmException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 public class Par {
 
     public static void runPar(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH) throws NoSuchAlgorithmException, IOException {
-
 
         System.out.println("[input hash]: " + hash + " \n[hash_type]: " + hash_type + " \n[char_set]: " + char_set + " \n[length]: " + pwd_length + "\n");
         Pattern pattern = Pattern.compile("^" + char_set + "+$");
@@ -46,10 +43,6 @@ public class Par {
 
         int attempts = 1;
         long t, t0 = System.currentTimeMillis();
-
-
-
-
 
 
         /// DICTIONARY ATTACK - Imma leave this one sequential
@@ -99,40 +92,53 @@ public class Par {
             // This is just to divide the char_set_arr (how bug the range is)
             // such that each threads gets about the same amount of work
 
-            System.out.println("cores: " + "length: " + char_set_arr.length);
-            int[] ranges = Functions.divideChunk(cores, char_set_arr.length);
+            System.out.println("[cores]: " + cores + " [length]: " + char_set_arr.length);
+            // this currently just returns the length of the chunk
+            int[] chunk_size = Functions.divideChunk(cores, char_set_arr.length);
+            // still need to define the actual chunks
 
-            System.out.print("The ranges are: ");
-            for (int i = 0; i < ranges.length-1; i++) {
-                System.out.print(ranges[i]+ " ");
+//            System.out.print("The ranges are: ");
+//            for (int i = 0; i < ranges.length; i++) {
+//                System.out.print(ranges[i]+ " ");
+//            }
+
+            // ranges[x][] - the ranges; ranges[][0/1] - start/end char
+            char[][] ranges = Functions.getRangeBounds(char_set_arr, chunk_size);
+            for (int i = 0; i < ranges.length; i++) {
+                System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
             }
 
-
-            int startChar = 0, endChar = 0; // determine these two
             String pwd_and_attempt = "";
 
             /// BRUTE FORCE ATTACK
             System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
-            progress.setValue(0);
-            System.out.println("[Brute force attack] started.");
-            progress.setString("Brute force attack..");
-            currentprogress = 0;
+            System.out.println("[Brute force attack] started."); progress.setValue(0);
+            progress.setString("Brute force attack.."); currentprogress = 0;
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
-            /// ⚠️⚠⚠
+            /// ⚠️⚠⚠⚠
             for (int i = 0; i < cores; i++) {
 
-                pool.submit(() -> { /*the function*/});
-                //pws_and_attempt = Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, possible_combs, attempts, currentprogress, progress);
+                char startChar = ranges[i][0];
+                char endChar = ranges[i][1];
+
+                pool.submit(() -> {
+                    try {
+                        Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, possible_combs, attempts2, progress);
+                    } catch (NoSuchAlgorithmException e) {
+                        throw new RuntimeException(e);
+                    }
+                });
+                System.out.println();
                 pool.shutdown();
             }
             /// ⚠⚠⚠️
             t = System.currentTimeMillis() - t0;
             // get password, attempts
-            progress.setValue(100);
-            progress.setString("Success");
-            String[] output = "pws_and_attempt".split("\n");
+            progress.setValue(100);                 // Move all of this in the function above
+            progress.setString("Success");                              //      ┐
+            String[] output = "pws_and_attempt".split("\n");      //      |
             System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
-            seqGUI.enableButtons();
+            parGUI.enableButtons();                                     //      ┘
 
         }
     }

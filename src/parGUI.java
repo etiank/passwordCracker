@@ -66,6 +66,8 @@ public class parGUI {
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
+                        //
+
                     }).start();
                 }
                 if (radio_sha256.isSelected()) {
@@ -78,6 +80,8 @@ public class parGUI {
                         } catch (IOException ex) {
                             throw new RuntimeException(ex);
                         }
+                        //
+
                     }).start();
                 }
 
