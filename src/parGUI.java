@@ -25,8 +25,8 @@ public class parGUI {
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
-        JSlider length_slider = new JSlider(0,20,10);
+        JTextField char_set = new JTextField("[a-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]  [0-9A-Za-z]
+        JSlider length_slider = new JSlider(0,20,5);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);

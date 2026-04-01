@@ -2,6 +2,7 @@ import javax.swing.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -163,7 +164,7 @@ public class Functions {
     ///
     public static void guiUpdate(AtomicInteger progress){
 
-
+        // what the frick am I gonna do with this lol
 //        SwingUtilities.invokeLater(() -> {
 //            //progress.setValue(percent);
 //        });
@@ -171,39 +172,71 @@ public class Functions {
 
     // Change this to inlcude startChar & endChar
     ///
-    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, int startChar, int stopChar, String hash, String hash_type, long possible_combs, AtomicLong attempts, JProgressBar progress) throws NoSuchAlgorithmException {
-
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, long possible_combs, AtomicLong attempts, JProgressBar progress, int nThread, AtomicBoolean found) throws NoSuchAlgorithmException {
         int[] indices = new int[pwd_length]; // initializing
+        System.out.println("[" + nThread + "]start " + startChar + " end " + endChar);
+        indices[0] = new String(char_set).indexOf(startChar);
         char[] currentGuess = new char[pwd_length];
-        Arrays.fill(currentGuess, char_set[0]); // fill the char arr with the first char in char_set
-        String password = "";
+        //System.out.println(char_set);
+        currentGuess[0] = startChar; // dummy
 
+        System.out.println("Bruh 1");
+        for (int i = 1; i < pwd_length; i++) { //
+            indices[i] = 0;
+            currentGuess[i] = char_set[0];
+        }
+
+        String password = "";
+        System.out.println("Bruh 2");
         while (true){ // compare the current guess
+            if(found.get() || Thread.currentThread().isInterrupted()){
+                return "";
+            }
             String strGuess = new String(currentGuess);
-            //System.out.println("["+attempts + "] guess: " + strGuess + " total combs: " + possible_combs);
+//            System.out.println("["+attempts + "] guess: " + strGuess);
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)){
-                password = strGuess; break;}
+                System.out.println("[FOUND] " + strGuess);
+                password = strGuess; /*stop every thread*/;
+                found.set(true);
+            return password;
+
+            }
 
             // Iterate string
             int i = pwd_length - 1; // start at last char
             while (i >= 0){ // while password length is not 0
                 indices[i]++; // increment the last (from left to right) char in the indices
-                if (indices[i] < char_set.length){ // if last index didnt yet reach the end of the char_set
-                    currentGuess[i] = char_set[indices[i]]; // update current guess' char with the new char
-                    break;
-                } else {
-                    indices[i] = 0;
-                    currentGuess[i] = char_set[0];
-                    i--; // reset and move to the next digit
+//                System.out.println("[" + nThread + "]: " + Arrays.toString(currentGuess));
+
+                if(i==0){
+                    System.out.println("indecies " + char_set[indices[0]] + ", end char " + new String(char_set).indexOf(endChar));
+
+                    if (indices[0] < new String(char_set).indexOf(endChar)){ // if last index didnt yet reach the end of the char_set
+                        currentGuess[0] = char_set[indices[0]]; // update current guess' char with the new char
+                        i = pwd_length -1;
+//                        break;
+                    } else {
+                        return password.isEmpty() ? "bombasticno" : (password + "\n" + attempts);
+                    }
+                } else{
+                    if(indices[i] < char_set.length){
+                        currentGuess[i] = char_set[indices[i]];
+
+//                        System.out.println("2: " + Arrays.toString(currentGuess));
+                        break;
+                    } else {
+                        indices[i] = 0;
+                        currentGuess[i] = char_set[0];
+                        i--; // reset and move to the next digit
+                    }
                 }
             }
             attempts.incrementAndGet(); // update progress bar
-
-
-
-            if(i < 0) break; // if this is reached we've been through all possible combinations7
+            if (i < 0) {
+                System.out.println("[Been through all characters]");
+                break; // if this is reached we've been through all possible combinations7
+            }
         }
-
         return password + "\n" + attempts;
     }
 
