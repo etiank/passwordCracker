@@ -172,22 +172,22 @@ public class Functions {
 
     // Change this to inlcude startChar & endChar
     ///
-    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, long possible_combs, AtomicLong attempts, JProgressBar progress, int nThread, AtomicBoolean found) throws NoSuchAlgorithmException {
-        int[] indices = new int[pwd_length]; // initializing
-        System.out.println("[" + nThread + "]start " + startChar + " end " + endChar);
-        indices[0] = new String(char_set).indexOf(startChar);
+    public static String parallelBruteForceGeneratorLegacy(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found) throws NoSuchAlgorithmException {
+        int[] index = new int[pwd_length]; // initializing
+        System.out.println("[" + nThread + "] start " + startChar + " end " + endChar);
+        index[0] = new String(char_set).indexOf(startChar);
         char[] currentGuess = new char[pwd_length];
         //System.out.println(char_set);
         currentGuess[0] = startChar; // dummy
 
-        System.out.println("Bruh 1");
+        //System.out.println("Bruh 1");
         for (int i = 1; i < pwd_length; i++) { //
-            indices[i] = 0;
+            index[i] = 0;
             currentGuess[i] = char_set[0];
         }
 
         String password = "";
-        System.out.println("Bruh 2");
+        //System.out.println("Bruh 2");
         while (true){ // compare the current guess
             if(found.get() || Thread.currentThread().isInterrupted()){
                 return "";
@@ -199,33 +199,33 @@ public class Functions {
                 password = strGuess; /*stop every thread*/;
                 found.set(true);
             return password;
-
             }
+            attempts.getAndIncrement();
 
             // Iterate string
             int i = pwd_length - 1; // start at last char
             while (i >= 0){ // while password length is not 0
-                indices[i]++; // increment the last (from left to right) char in the indices
-//                System.out.println("[" + nThread + "]: " + Arrays.toString(currentGuess));
+                index[i]++; // increment the last (from left to right) char in the indices
+//                System.out.println("[" + attempts + "][" + nThread + "]: " + Arrays.toString(currentGuess));
 
                 if(i==0){
-                    System.out.println("indecies " + char_set[indices[0]] + ", end char " + new String(char_set).indexOf(endChar));
+                    System.out.println("indices " + char_set[index[0]] + ", end char " + new String(char_set).indexOf(endChar));
 
-                    if (indices[0] < new String(char_set).indexOf(endChar)){ // if last index didnt yet reach the end of the char_set
-                        currentGuess[0] = char_set[indices[0]]; // update current guess' char with the new char
+                    if (index[0] < new String(char_set).indexOf(endChar)){ // if last index didnt yet reach the end of the char_set
+                        currentGuess[0] = char_set[index[0]]; // update current guess' char with the new char
                         i = pwd_length -1;
 //                        break;
                     } else {
-                        return password.isEmpty() ? "bombasticno" : (password + "\n" + attempts);
+                        return password.isEmpty() ? "Password is empty." : (password + "\n" + attempts);
                     }
                 } else{
-                    if(indices[i] < char_set.length){
-                        currentGuess[i] = char_set[indices[i]];
+                    if(index[i] < char_set.length){
+                        currentGuess[i] = char_set[index[i]];
 
 //                        System.out.println("2: " + Arrays.toString(currentGuess));
                         break;
                     } else {
-                        indices[i] = 0;
+                        index[i] = 0;
                         currentGuess[i] = char_set[0];
                         i--; // reset and move to the next digit
                     }
@@ -240,7 +240,78 @@ public class Functions {
         return password + "\n" + attempts;
     }
 
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress) throws NoSuchAlgorithmException {
 
+        // 1. Find indices for the range
+        int startIndex = -1;
+        int endIndex = -1;
+        for (int i = 0; i < char_set.length; i++) {
+            if (char_set[i] == startChar) startIndex = i;
+            if (char_set[i] == endChar) endIndex = i;
+        }
+
+        // 2. Initialize current guess and indices
+        int[] index = new int[pwd_length];
+        char[] currentGuess = new char[pwd_length];
+
+        index[0] = startIndex;
+        currentGuess[0] = startChar;
+        for (int i = 1; i < pwd_length; i++) {
+            index[i] = 0;
+            currentGuess[i] = char_set[0];
+        }
+
+        System.out.println("[" + nThread + "] start " + startChar + " end " + endChar);
+
+        while (index[0] <= endIndex && !found.get()) {
+
+            String strGuess = new String(currentGuess);
+
+            // Hash and compare (using your original hash_it function)
+            if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
+                found.set(true); // This causes all other threads to stop their while-loop
+                System.out.println("[FOUND BY THREAD " + nThread + "][password]: " + strGuess);
+                SwingUtilities.invokeLater(() -> {//
+                    progress.setValue(100);
+                    progress.setString("Success");
+                });
+                return strGuess;
+            }
+
+            // Increment the shared attempts counter every single iteration
+            attempts.getAndIncrement();
+
+            // Iterate string (Odometer logic)
+            int i = pwd_length - 1; // Start at the last character
+            while (i >= 0) {
+                index[i]++; // Increment the index at the current position
+
+                if (index[i] < char_set.length) {
+                    // If we haven't rolled over the character set, update and stop carrying
+                    currentGuess[i] = char_set[index[i]];
+                    break;
+                } else {
+                    // If we reached the end of the char_set, reset this position to 0
+                    // and move to the left (i--) to increment the next position
+                    if (i == 0) {
+                        // If we just rolled over the first character, it means we've
+                        // finished the entire range for this thread.
+                        break;
+                    }
+                    index[i] = 0;
+                    currentGuess[i] = char_set[0];
+                    i--;
+                }
+            }
+
+            // If the first character index has moved past our end index, exit the loop
+            if (index[0] > endIndex) {
+                break;
+            }
+        }
+
+        return null;
+    }
 
 }
     // MessageDigest         https://www.baeldung.com/java-md5

@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Pattern;
 
 public class Par {
@@ -73,7 +74,7 @@ public class Par {
             progress.setValue(100);
             progress.setString("Success");
             System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
-            seqGUI.enableButtons();
+            parGUI.enableButtons();
 
         } else {
 
@@ -117,39 +118,40 @@ public class Par {
             progress.setString("Brute force attack.."); currentprogress = 0;
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
             /// ⚠️⚠⚠⚠
-            String[] ass = new String[cores];
+            AtomicReference<String> test = new AtomicReference<>(new String());
             for (int i = 0; i < cores; i++) {
 
                 char startChar = ranges[i][0];
                 char endChar = ranges[i][1];
-                int ii = i;
+                int j = i;
 
                 pool.submit(() -> {
-                    System.out.println("Thread[" + ii + "] starting");
+                    System.out.println("Thread[" + j + "] starting");
                     try {
-                        ass[ii] = Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, possible_combs, attempts2, progress, ii, found);
-                        System.out.println("Thread[" + ii + "] finished cooking");
+                        test.set(Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, attempts2, j, found, progress));
+                        System.out.println("Thread[" + j + "] finished cooking");
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
                         throw new RuntimeException(e);
                     }
                 });
-                System.out.println();
+            }
+            while(!found.get()){
+                SwingUtilities.invokeLater(() -> {//
+                    int percent = Functions.computeProgress(attempts2.get(), possible_combs);
+                    progress.setValue(percent);
+                });
             }
             try {
                 pool.awaitTermination(60, TimeUnit.MINUTES);
             } catch (InterruptedException e) {
                     throw new RuntimeException(e);
             }
-            //pool.shutdown();
+            pool.shutdown();
             /// ⚠⚠⚠️
             t = System.currentTimeMillis() - t0;
-            // get password, attempts
-            progress.setValue(100);                 // Move all of this in the function above
-            progress.setString("Success");                              //      ┐
-            //String[] output = "pws_and_attempt".split("\n");      //      |
-            //System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
-            parGUI.enableButtons();                                     //      ┘
+            System.out.println("[Brute force attack] success.\n[pwd]: " + test + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts2.get());
+            parGUI.enableButtons();
 
         }
     }
