@@ -22,7 +22,7 @@ public class Main {
                 break;
             case 1:
                 parGUI.GUI();
-                System.out.println("Available processors: " + Runtime.getRuntime().availableProcessors()); //
+                System.out.println("Available cores: " + Runtime.getRuntime().availableProcessors()); //
                 break;
             case 2:
                 // CUDA

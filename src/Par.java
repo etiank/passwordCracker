@@ -125,10 +125,11 @@ public class Par {
                 char endChar = ranges[i][1];
                 int j = i;
 
+                long finalT = t;
                 pool.submit(() -> {
                     System.out.println("Thread[" + j + "] starting");
                     try {
-                        test.set(Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, attempts2, j, found, progress));
+                        test.set(Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, attempts2, j, found, progress, finalT, t0));
                         System.out.println("Thread[" + j + "] finished cooking");
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
@@ -149,9 +150,7 @@ public class Par {
             }
             pool.shutdown();
             /// ⚠⚠⚠️
-            t = System.currentTimeMillis() - t0;
-            System.out.println("[Brute force attack] success.\n[pwd]: " + test + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts2.get());
-            parGUI.enableButtons();
+
 
         }
     }

@@ -240,7 +240,7 @@ public class Functions {
         return password + "\n" + attempts;
     }
 
-    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress) throws NoSuchAlgorithmException {
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0) throws NoSuchAlgorithmException {
 
         // 1. Find indices for the range
         int startIndex = -1;
@@ -271,6 +271,9 @@ public class Functions {
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
                 found.set(true); // This causes all other threads to stop their while-loop
                 System.out.println("[FOUND BY THREAD " + nThread + "][password]: " + strGuess);
+                t = System.currentTimeMillis() - t0;
+                System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get());
+                parGUI.enableButtons();
                 SwingUtilities.invokeLater(() -> {//
                     progress.setValue(100);
                     progress.setString("Success");
