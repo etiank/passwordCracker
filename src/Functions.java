@@ -316,5 +316,23 @@ public class Functions {
         return null;
     }
 
+    public static char[] flattenMatrix(char[][] matrix){
+
+        int length = 0;
+        for (char[] n : matrix) {
+                length += n.length;
+        }
+        char[] arr = new char[length];
+        int i = 0;
+        for (char[] n : matrix) {
+            for (char element : n) {
+                arr[i++] = element;
+            }
+
+        }
+
+        return arr;
+    }
+
 }
     // MessageDigest         https://www.baeldung.com/java-md5

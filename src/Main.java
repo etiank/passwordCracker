@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 
 // Maybe add `-Djava.awt.headless=false` in the VM options instead of in the code
 /*
@@ -60,17 +61,42 @@ public class Main {
         } else { // WORKER -> receive range, compute -> can i use functions class? I need new function, send back
 
             // RECEIVE
-            MPI.COMM_WORLD.Bcast(thing, 0, 1, MPI.INT, 0);
+            int[] pwd_length = new int[1];
+            System.out.println("["+me+"] WORKERS");
+            MPI.COMM_WORLD.Bcast(pwd_length, 0, 1, MPI.INT, 0); //
+            System.out.println("["+me+"] RECV pwd_length: " + pwd_length[0]);
+
+            int[] hash_length = new int[1];
+            MPI.COMM_WORLD.Bcast(hash_length, 0, 1, MPI.INT, 0); //
+            System.out.println("["+me+"] RECV hash_length: " + hash_length[0]);
+
+            char[] hash_buffer = new char[hash_length[0]];
+            MPI.COMM_WORLD.Bcast(hash_buffer, 0, hash_length[0], MPI.CHAR, 0); // [✔]
+            System.out.println("["+ me+ "] RECV hash: " + Arrays.toString(hash_buffer));
+
+            int[] char_set_length = new int[1];
+            MPI.COMM_WORLD.Bcast(char_set_length, 0, 1, MPI.INT, 0); // [✔]
+            System.out.println("["+ me+ "] RECV char_set_length: " + char_set_length[0]);
+
+            char[] char_set = new char[char_set_length[0]];
+            MPI.COMM_WORLD.Bcast(char_set, 0, char_set_length[0], MPI.CHAR, 0); // [✔]
+            System.out.println("["+ me+ "] RECV char_set: " + Arrays.toString(char_set));
+
+            int[] hash_type_length = new int[1];
+            MPI.COMM_WORLD.Bcast(hash_type_length, 0, 1, MPI.INT, 0); // [✔]
+            System.out.println("["+ me+ "] RECV hash_type_length: " + hash_type_length[0]);
+
+            char[] hash_type_buffer = new char[hash_type_length[0]];
+            MPI.COMM_WORLD.Bcast(hash_type_buffer, 0, hash_type_length[0], MPI.CHAR, 0); // [✔]
+            System.out.println("["+ me+ "] RECV hash_tyoe: " + Arrays.toString(hash_type_buffer)); String hash_type = new String(hash_type_buffer);
+
+
+
+
+//            MPI.COMM_WORLD.Bcast(char_set, 0, 1, MPI.INT, 0); //
+//            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); //
 
             // COMPUTE
-            int pwd_length = 0;
-            MPI.COMM_WORLD.Bcast(pwd_length, 0, 1, MPI.INT, 0); // ⬤
-
-            MPI.COMM_WORLD.Bcast(char_set, 0, 1, MPI.INT, 0); // ⬤
-
-            MPI.COMM_WORLD.Bcast(hash, 0, 1, MPI., 0); // ⬤
-            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); // ⬤
-
 
             // SEND BACK
 
@@ -97,9 +123,9 @@ public class Main {
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
+        JTextField char_set = new JTextField("[a-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         //char_set.setToolTipText(". - all [a-z] - lowercase [A-Z] - uppercase [0-9] - numerical");
-        JSlider length_slider = new JSlider(0,20,10);
+        JSlider length_slider = new JSlider(0,20,5);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);
@@ -132,7 +158,13 @@ public class Main {
                     button.setEnabled(false); dictionaryButton.setEnabled(false);
                     new Thread(() -> { // rabi thread kr ce ne samo zamrzne
 
-                        Distr.runDistr(hash,"MD5", char_set2, pwd_length, progress, PATH, me, nodes);
+                        try {
+                            Distr.runDistr(hash,"MD5", char_set2, pwd_length, progress, PATH, me, nodes);
+                        } catch (NoSuchAlgorithmException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
 
                     }).start();
                 }
@@ -140,7 +172,13 @@ public class Main {
                     button.setEnabled(false); dictionaryButton.setEnabled(false);
                     new Thread(() -> {
 
-                        Distr.runDistr(hash,"SHA-256", char_set2, pwd_length, progress, PATH, me, nodes);
+                        try {
+                            Distr.runDistr(hash,"SHA-256", char_set2, pwd_length, progress, PATH, me, nodes);
+                        } catch (NoSuchAlgorithmException ex) {
+                            throw new RuntimeException(ex);
+                        } catch (IOException ex) {
+                            throw new RuntimeException(ex);
+                        }
 
                     }).start();
                 }

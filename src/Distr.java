@@ -6,7 +6,9 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 
@@ -16,7 +18,7 @@ public class Distr {
     public static void runDistr(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH, int me, int nodes) throws NoSuchAlgorithmException, IOException{
 
         ///  Root has all the info
-        ///  Dont forget DICTIONARY ATTACK [✔]
+        //  Dont forget DICTIONARY ATTACK [✔]
         ///  Needs to split char_set into ranges just like for parallel
         ///  Bcast each range to each worker
         ///     What needs to be bcasted?
@@ -83,21 +85,57 @@ public class Distr {
                 System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
             }
 
+            //System.out.println("ass:\n" + Arrays.deepToString(ranges));
+            System.out.println("ass:\n" + Arrays.toString(Functions.flattenMatrix(ranges)));
+
+
             /// MPJ
 
-            // Broadcast  (thing, offset(prob 0), count, type MPI.INT, who's bcasting 0)
-            // pwd_length, char_set, starChar, endChar, hash, hash_type, attempts?, found???, progressbar?????
+            // BROADCAST  (thing, offset(prob 0), count, type MPI.INT, who's bcasting 0)
+            // pwd_length ✔, char_set ✔, range, hash ✔, hash_type ✔, attempts?, found???, progressbar?????
+            // ONLY ARRAYS CAN BE SENT
+            System.out.println("["+me+"] ROOT SENDING");
+            int[] pwd_length_buffer = new int[1]; pwd_length_buffer[0] = pwd_length;
+            MPI.COMM_WORLD.Bcast(pwd_length_buffer, 0, 1, MPI.INT, 0); // ⬤
+            System.out.println("["+me+"] SENT pwd_length");
 
-            MPI.COMM_WORLD.Bcast(pwd_length, 0, 1, MPI.INT, 0); // ⬤
-            MPI.COMM_WORLD.Bcast(char_set, 0, 1, MPI.INT, 0); // ⬤
-            MPI.COMM_WORLD.Bcast(startChar, 0, 1, MPI.INT, 0); // ⬤
-            MPI.COMM_WORLD.Bcast(endChar, 0, 1, MPI.INT, 0); // ⬤
-            MPI.COMM_WORLD.Bcast(hash, 0, 1, MPI.INT, 0); // ⬤
-            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); // ⬤
+            int[] hash_length_buffer = new int[hash.length()]; hash_length_buffer[0] = hash.length();
+            MPI.COMM_WORLD.Bcast(hash_length_buffer, 0, 1, MPI.INT, 0); // ⬤
+            System.out.println("["+me+"] SENT hash_length");
 
-            // Scatter?
+            char[] hash_buffer = hash.toCharArray();
+            MPI.COMM_WORLD.Bcast(hash_buffer, 0, hash.length(), MPI.CHAR, 0); // ⬤
+            System.out.println("["+me+"] SENT hash: " + hash);
 
-            // Gather
+            int[] char_set_arr_length = new int[1]; char_set_arr_length[0] = char_set_arr.length;
+            MPI.COMM_WORLD.Bcast(char_set_arr_length, 0, 1, MPI.INT, 0); // ⬤
+            System.out.println("["+me+"] SENT char_set_length: " + char_set_arr.length);
+
+            MPI.COMM_WORLD.Bcast(char_set_arr, 0, char_set_arr.length, MPI.CHAR, 0); // ⬤
+            System.out.println("["+me+"] SENT char_set_arr: " + Arrays.toString(char_set_arr));
+
+            int[] hash_type_length = new int[1]; hash_type_length[0] = hash_type.length();
+            MPI.COMM_WORLD.Bcast(hash_type_length, 0, 1, MPI.INT, 0); // ⬤
+            System.out.println("["+me+"] SENT hash_type_length: " + hash_type.length());
+
+            char[] hash_type_buffer = hash_type.toCharArray();
+            MPI.COMM_WORLD.Bcast(hash_type_buffer, 0, hash_type.length(), MPI.CHAR, 0); // ⬤
+            System.out.println("["+me+"] SENT hash_type" + Arrays.toString(hash_type_buffer));
+
+            //send chunksize
+            //MPI.COMM_WORLD.Scatter();
+
+
+
+
+
+//            MPI.COMM_WORLD.Bcast(startChar, 0, 1, MPI.INT, 0); // ⬤
+//            MPI.COMM_WORLD.Bcast(endChar, 0, 1, MPI.INT, 0); // ⬤
+//            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); // ⬤
+
+            // SCATTER
+
+            // GATHER
 
 
         }
@@ -114,8 +152,8 @@ public class Distr {
         ///  needs: pwd_length, char_set, starChar, endChar, hash, hash_type, attempts?, found???, progressbar?????
         ///  Can I make it quit after any of the workera(or root) find the hash? Maybe while loop. Need it for Found
 
-        public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong
-        attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0) throws NoSuchAlgorithmException {
+//        public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong
+//        attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0)
 
     }
 
