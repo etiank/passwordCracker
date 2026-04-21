@@ -95,6 +95,8 @@ public class Par {
             // such that each threads gets about the same amount of work
 
             System.out.println("[cores]: " + cores + " [length]: " + char_set_arr.length);
+
+            ///  CHUNKS - RANGES
             // this currently just returns the length of the chunk
             int[] chunk_size = Functions.divideChunk(cores, char_set_arr.length);
             // still need to define the actual chunks
@@ -110,7 +112,7 @@ public class Par {
                 System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
             }
 
-            String pwd_and_attempt = "";
+            //String pwd_and_attempt = "";
 
             /// BRUTE FORCE ATTACK
             System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));

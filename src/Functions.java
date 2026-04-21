@@ -80,9 +80,8 @@ public class Functions {
             return char_set;
     }
 
-    /// Needs to take in the pwd_length, char_set, original hash, hasy_type. pa kaj se
+    /// Needs to take in the pwd_length, char_set, original hash, hasy_type.
     /// Iteratively generate string, hash it and compare it to the orignal hash: andrej's predlog btw
-    /// Needa return the actual broken Password, n. of Attempts, time?,
     public static String bruteForceGenerator(int pwd_length, char[] char_set, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
 
         int[] indices = new int[pwd_length]; // initializing
@@ -171,7 +170,8 @@ public class Functions {
     }
 
     // Change this to inlcude startChar & endChar
-    ///
+
+    /// Thank you Sever for the help
     public static String parallelBruteForceGeneratorLegacy(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found) throws NoSuchAlgorithmException {
         int[] index = new int[pwd_length]; // initializing
         System.out.println("[" + nThread + "] start " + startChar + " end " + endChar);
