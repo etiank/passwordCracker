@@ -18,7 +18,7 @@ public class Distr {
     public static void runDistr(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH, int me, int nodes) throws NoSuchAlgorithmException, IOException{
 
         ///  Root has all the info
-        //  Dont forget DICTIONARY ATTACK [✔]
+        ///  Dont forget DICTIONARY ATTACK
         ///  Needs to split char_set into ranges just like for parallel
         ///  Bcast each range to each worker
         ///     What needs to be bcasted?
@@ -57,7 +57,7 @@ public class Distr {
             if (currentLine.length() != pwd_length) continue; // skip candidates that are not the right length
             if (!pattern.matcher(currentLine).matches())
                 continue; // skip candidates that dont fit the specified char set
-            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
+//            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
             String dict_hash = Functions.hash_it(currentLine, hash_type);
             if (dict_hash.equalsIgnoreCase(hash)) break; // gredol
             attempts++;
@@ -75,18 +75,22 @@ public class Distr {
             progress.setValue(100);
             progress.setString("Success");
             System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
-            parGUI.enableButtons();
+            Main.enableButtons();
             MPI.Finalize();
         } else {
             /// CHUNKS - RANGES
+            System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
+            System.out.println("[Brute force attack] started."); progress.setValue(0);
+            progress.setString("Brute force attack..");
+            System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
             int[] chunk_size = Functions.divideChunk(nodes, char_set_arr.length);
             char[][] ranges = Functions.getRangeBounds(char_set_arr, chunk_size);
             for (int i = 0; i < ranges.length; i++) {
                 System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
             }
 
-            //System.out.println("ass:\n" + Arrays.deepToString(ranges));
-            System.out.println("ass:\n" + Arrays.toString(Functions.flattenMatrix(ranges)));
+
+//            System.out.println("ass:\n" + Arrays.toString(Functions.flattenMatrix(ranges)));
 
 
             /// MPJ
@@ -120,29 +124,39 @@ public class Distr {
 
             char[] hash_type_buffer = hash_type.toCharArray();
             MPI.COMM_WORLD.Bcast(hash_type_buffer, 0, hash_type.length(), MPI.CHAR, 0); // ⬤
-            System.out.println("["+me+"] SENT hash_type" + Arrays.toString(hash_type_buffer));
-
-            //send chunksize
-            //MPI.COMM_WORLD.Scatter();
-
-
-
-
-
-//            MPI.COMM_WORLD.Bcast(startChar, 0, 1, MPI.INT, 0); // ⬤
-//            MPI.COMM_WORLD.Bcast(endChar, 0, 1, MPI.INT, 0); // ⬤
-//            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); // ⬤
+            System.out.println("["+me+"] SENT hash_type: " + Arrays.toString(hash_type_buffer));
 
             // SCATTER
+            //send chunksize
+            char[] recvBuffer = new char[2]; char[] sendBuff = Functions.flattenMatrix(ranges);
+            MPI.COMM_WORLD.Scatter(
+                    sendBuff, 0, 2, MPI.CHAR,
+                    recvBuffer, 0, 2, MPI.CHAR, 0);  // ⬤
+            System.out.println("["+me+"] SENT ranges: " + Arrays.toString(sendBuff));
+            System.out.println("["+me+"] ROOT range from " + sendBuff[0] + " to " + sendBuff[1]);
 
-            // GATHER
+
+            long attemptsRoot;
+            String[] result;
+            result = Functions.distributedBruteForceGenerator(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me);
+            System.out.println("["+me+"] RESULT: " + result[0]);
+            System.out.println("["+me+"] LOCAL ATTEMPTS: " + result[1]);
+
+            // GATHER password & attempts
+//            char[] exploded_pwd = new char[];
+            long[] total_attempts = new long[nodes];  long[] root_attempts = new long[1]; root_attempts[0] = attempts + Long.parseLong(result[1]);
+//            MPI.COMM_WORLD.Gather( // attempts
+//                    root_attempts, 0, 1, MPI.LONG,
+//                    total_attempts, 0, 1, MPI.LONG, 0);
+
+            MPI.COMM_WORLD.Reduce(
+                    root_attempts, 0, total_attempts, 0, 1, MPI.LONG, MPI.SUM, 0
+            );
+            System.out.println("["+me+"] TOTAL ATTEMPTS: " + total_attempts[0]);
+
 
 
         }
-
-
-
-
     }
 
     public static void compute(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH, int me, int nodes){

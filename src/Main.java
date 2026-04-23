@@ -61,10 +61,11 @@ public class Main {
         } else { // WORKER -> receive range, compute -> can i use functions class? I need new function, send back
 
             // RECEIVE
-            int[] pwd_length = new int[1];
+            int[] pwd_lengthBuffer = new int[1];
             System.out.println("["+me+"] WORKERS");
-            MPI.COMM_WORLD.Bcast(pwd_length, 0, 1, MPI.INT, 0); //
-            System.out.println("["+me+"] RECV pwd_length: " + pwd_length[0]);
+            MPI.COMM_WORLD.Bcast(pwd_lengthBuffer, 0, 1, MPI.INT, 0); //
+            System.out.println("["+me+"] RECV pwd_length: " + pwd_lengthBuffer[0]);
+            int pwd_length = pwd_lengthBuffer[0];
 
             int[] hash_length = new int[1];
             MPI.COMM_WORLD.Bcast(hash_length, 0, 1, MPI.INT, 0); //
@@ -72,7 +73,9 @@ public class Main {
 
             char[] hash_buffer = new char[hash_length[0]];
             MPI.COMM_WORLD.Bcast(hash_buffer, 0, hash_length[0], MPI.CHAR, 0); // [✔]
-            System.out.println("["+ me+ "] RECV hash: " + Arrays.toString(hash_buffer));
+//          String hash = Arrays.toString(hash_buffer);
+            String hash = new String(hash_buffer);
+            System.out.println("["+ me+ "] RECV hash: " + hash);
 
             int[] char_set_length = new int[1];
             MPI.COMM_WORLD.Bcast(char_set_length, 0, 1, MPI.INT, 0); // [✔]
@@ -88,17 +91,39 @@ public class Main {
 
             char[] hash_type_buffer = new char[hash_type_length[0]];
             MPI.COMM_WORLD.Bcast(hash_type_buffer, 0, hash_type_length[0], MPI.CHAR, 0); // [✔]
-            System.out.println("["+ me+ "] RECV hash_tyoe: " + Arrays.toString(hash_type_buffer)); String hash_type = new String(hash_type_buffer);
+            System.out.println("["+ me+ "] RECV hash_type: " + Arrays.toString(hash_type_buffer));
+            String hash_type = new String(hash_type_buffer);
 
-
-
-
-//            MPI.COMM_WORLD.Bcast(char_set, 0, 1, MPI.INT, 0); //
-//            MPI.COMM_WORLD.Bcast(hash_type, 0, 1, MPI.INT, 0); //
+            char[] range = new char[2];
+            char[] sendBuff = new char[2*nodes];// bc for some reason
+            MPI.COMM_WORLD.Scatter(
+                    sendBuff, 0, 2, MPI.CHAR,
+                    range, 0, 2, MPI.CHAR, 0);
+            System.out.println("["+ me+ "] RECV range from " + range[0] + " to " + range[1]);
+            char starChar = range[0]; char endChar = range[1];
 
             // COMPUTE
+            System.out.println("["+me+"] starting brute forcing");
+            String[] result;
+            try {
+                result = Functions.distributedBruteForceGenerator(pwd_length, char_set, starChar, endChar, hash, hash_type, me);
+            } catch (NoSuchAlgorithmException e) {
+                throw new RuntimeException(e);
+            }
+            System.out.println("["+me+"] RESULT: " + result[0]);
+            System.out.println("["+me+"] LOCAL ATTEMPTS: " + result[1]);
+            long[] attempts = new long[1]; attempts[0] = Long.parseLong(result[1]);
 
             // SEND BACK
+            // Attempts & found password
+            long[] total_attempts = new long[nodes];
+//            MPI.COMM_WORLD.Gather( // attempts
+//                    attempts, 0, 1, MPI.LONG,
+//                    total_attempts, 0, 1, MPI.LONG, 0);
+
+            MPI.COMM_WORLD.Reduce(
+                    attempts, 0, total_attempts, 0, 1, MPI.LONG, MPI.SUM, 0
+            );
 
         }
 

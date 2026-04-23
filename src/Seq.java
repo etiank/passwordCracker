@@ -104,6 +104,7 @@ public class Seq {
             progress.setString("Brute force attack..");
             currentprogress = 0;
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
+            /// BRUTE FORCING
             String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
             t = System.currentTimeMillis() - t0;
             // get password, attempts

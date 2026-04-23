@@ -241,8 +241,8 @@ public class Functions {
     }
 
     public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0) throws NoSuchAlgorithmException {
-
-        // 1. Find indices for the range
+        System.out.println("hash: " + hash);
+        // find indices for the range
         int startIndex = -1;
         int endIndex = -1;
         for (int i = 0; i < char_set.length; i++) {
@@ -250,10 +250,9 @@ public class Functions {
             if (char_set[i] == endChar) endIndex = i;
         }
 
-        // 2. Initialize current guess and indices
+        // initialize index & current guess
         int[] index = new int[pwd_length];
         char[] currentGuess = new char[pwd_length];
-
         index[0] = startIndex;
         currentGuess[0] = startChar;
         for (int i = 1; i < pwd_length; i++) {
@@ -267,9 +266,8 @@ public class Functions {
 
             String strGuess = new String(currentGuess);
 
-            // Hash and compare (using your original hash_it function)
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
-                found.set(true); // This causes all other threads to stop their while-loop
+                found.set(true);
                 System.out.println("[FOUND BY THREAD " + nThread + "][password]: " + strGuess);
                 t = System.currentTimeMillis() - t0;
                 System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get());
@@ -280,25 +278,20 @@ public class Functions {
                 });
                 return strGuess;
             }
-
-            // Increment the shared attempts counter every single iteration
             attempts.getAndIncrement();
 
-            // Iterate string (Odometer logic)
-            int i = pwd_length - 1; // Start at the last character
+            int i = pwd_length - 1;
             while (i >= 0) {
-                index[i]++; // Increment the index at the current position
+                index[i]++;
 
                 if (index[i] < char_set.length) {
-                    // If we haven't rolled over the character set, update and stop carrying
+                    // if still same char, update and stop carrying
                     currentGuess[i] = char_set[index[i]];
                     break;
                 } else {
-                    // If we reached the end of the char_set, reset this position to 0
-                    // and move to the left (i--) to increment the next position
+                    // if end of char_set, reset to 0 & increment to next position
                     if (i == 0) {
-                        // If we just rolled over the first character, it means we've
-                        // finished the entire range for this thread.
+                        // gone through all chars from set
                         break;
                     }
                     index[i] = 0;
@@ -306,16 +299,17 @@ public class Functions {
                     i--;
                 }
             }
-
-            // If the first character index has moved past our end index, exit the loop
+            // finished range
             if (index[0] > endIndex) {
                 break;
             }
         }
-
         return null;
     }
 
+    ///  DISTR
+
+    /// Matrix flattener to convert the ranges 2d array into a normal array for Scatter
     public static char[] flattenMatrix(char[][] matrix){
 
         int length = 0;
@@ -332,6 +326,82 @@ public class Functions {
         }
 
         return arr;
+    }
+
+    // pwd_length ✔, char_set ✔, range, hash ✔, hash_type ✔
+    public static String[] distributedBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
+
+        long attempts = 0;
+        System.out.println("[" + me + "] hash: " + hash);
+        // find indices for the range
+        int startIndex = -1;
+        int endIndex = -1;
+        for (int i = 0; i < char_set.length; i++) {
+            if (char_set[i] == startChar) startIndex = i;
+            if (char_set[i] == endChar) endIndex = i;
+        }
+
+        // initialize index & current guess
+        int[] index = new int[pwd_length];
+        char[] currentGuess = new char[pwd_length];
+        index[0] = startIndex;
+        currentGuess[0] = startChar;
+        for (int i = 1; i < pwd_length; i++) {
+            index[i] = 0;
+            currentGuess[i] = char_set[0];
+        }
+
+        System.out.println("[" + me + "] start " + startChar + " end " + endChar);
+
+        while (index[0] <= endIndex /*&& !found.get()*/) {
+            String strGuess = new String(currentGuess);
+
+            if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
+//                found.set(true);
+                System.out.println("[FOUND] [" + me + "][password]: " + strGuess);
+//                t = System.currentTimeMillis() - t0;
+                System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess /*+ " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get()*/);
+//                Main.enableButtons();
+                SwingUtilities.invokeLater(() -> {//
+//                    progress.setValue(100);
+//                    progress.setString("Success");
+                });
+                String strAttempts = String.valueOf(attempts);
+                String[] result = new String[2]; result[0] = strGuess; result[1] = strAttempts;
+                if (result[0].isEmpty()) result[0] = " ";
+            return result;
+            }
+//            attempts.getAndIncrement();
+            attempts++;
+
+            int i = pwd_length - 1;
+            while (i >= 0) {
+                index[i]++;
+
+                if (index[i] < char_set.length) {
+                    // if still same char, update and stop carrying
+                    currentGuess[i] = char_set[index[i]];
+                    break;
+                } else {
+                    // if end of char_set, reset to 0 & increment to next position
+                    if (i == 0) {
+                        // gone through all chars from set
+                        break;
+                    }
+                    index[i] = 0;
+                    currentGuess[i] = char_set[0];
+                    i--;
+                }
+            }
+            // finished range
+            if (index[0] > endIndex) {
+                System.out.println("[" + me + "] Finished range: NOT FOUND");
+                break;
+            }
+        }
+        String strAttempts = String.valueOf(attempts);
+        String[] result = new String[2]; result[0] = ""; result[1] = strAttempts;
+        return result;
     }
 
 }
