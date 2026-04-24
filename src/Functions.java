@@ -1,3 +1,6 @@
+import mpi.MPI;
+import mpi.Status;
+
 import javax.swing.*;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -329,7 +332,7 @@ public class Functions {
     }
 
     // pwd_length ✔, char_set ✔, range, hash ✔, hash_type ✔
-    public static String[] distributedBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
+    public static String[] distributedBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, int nodes/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
 
         long attempts = 0;
         System.out.println("[" + me + "] hash: " + hash);
@@ -357,16 +360,16 @@ public class Functions {
             String strGuess = new String(currentGuess);
 
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
-//                found.set(true);
                 System.out.println("[FOUND] [" + me + "][password]: " + strGuess);
 //                t = System.currentTimeMillis() - t0;
+                for (int i = 0; i < nodes; i++) {
+                    if (i != me) {
+                        MPI.COMM_WORLD.Isend(new int[0], 0, 0, MPI.INT, i, 67);
+                    }
+                }
                 System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess /*+ " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get()*/);
 //                Main.enableButtons();
 
-                SwingUtilities.invokeLater(() -> {//
-//                    progress.setValue(100);
-//                    progress.setString("Success");
-                });
                 String strAttempts = String.valueOf(attempts);
                 String[] result = new String[2]; result[0] = strGuess; result[1] = strAttempts;
                 if (result[0].isEmpty()) result[0] = " ";
@@ -374,6 +377,13 @@ public class Functions {
             }
 //            attempts.getAndIncrement();
             attempts++;
+            if(attempts % 1000 == 0){
+                Status status = MPI.COMM_WORLD.Iprobe(MPI.ANY_SOURCE, 67);
+                if (status != null) {
+                    System.out.println("[" + me + "] STOPPING");
+                    break;
+                }
+            }
 
             int i = pwd_length - 1;
             while (i >= 0) {
@@ -405,7 +415,7 @@ public class Functions {
         return result;
     }
 
-    public static String[] distributedBruteForceGeneratorRoot(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, JProgressBar progress/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
+    public static String[] distributedBruteForceGeneratorRoot(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, JProgressBar progress, int nodes/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
         System.out.println("["+me+"] ROOT TEST2" );
         long possible_combs = (long) (Math.pow(char_set.length, (pwd_length-1)) * ((int) endChar - (int) startChar));
         System.out.println("[" + me + "] Possible combs root: " + possible_combs);
@@ -438,6 +448,11 @@ public class Functions {
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
 //                found.set(true);
                 System.out.println("[FOUND] [" + me + "][password]: " + strGuess);
+                for (int i = 0; i < nodes; i++) {
+                    if (i != me) {
+                        MPI.COMM_WORLD.Isend(new int[0], 0, 0, MPI.INT, i, 67);
+                    }
+                }
 //                t = System.currentTimeMillis() - t0;
                 System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess /*+ " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get()*/);
 //                Main.enableButtons();
@@ -453,6 +468,13 @@ public class Functions {
             }
 //            attempts.getAndIncrement();
             attempts++;
+            if(attempts % 1000 == 0){
+                Status status = MPI.COMM_WORLD.Iprobe(MPI.ANY_SOURCE, 67);
+                if (status != null) {
+                    System.out.println("[" + me + "] STOPPING");
+                    break;
+                }
+            }
             int percent = Functions.computeProgress(attempts, possible_combs);
             SwingUtilities.invokeLater(() -> {
                 progress.setValue(percent);

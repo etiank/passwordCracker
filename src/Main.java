@@ -106,7 +106,7 @@ public class Main {
             System.out.println("["+me+"] starting brute forcing");
             String[] result;
             try {
-                result = Functions.distributedBruteForceGenerator(pwd_length, char_set, starChar, endChar, hash, hash_type, me);
+                result = Functions.distributedBruteForceGenerator(pwd_length, char_set, starChar, endChar, hash, hash_type, me, nodes);
             } catch (NoSuchAlgorithmException e) {
                 throw new RuntimeException(e);
             }

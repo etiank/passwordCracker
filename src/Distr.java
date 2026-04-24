@@ -47,7 +47,7 @@ public class Distr {
         progress.setString("Dictionary attack..");
 
         int attempts = 1;
-        long t, t0 = System.currentTimeMillis();
+        long t, t0 = System.currentTimeMillis(), t_total = System.currentTimeMillis();
 
         /// DICTIONARY ATTACK - Sequential
         String currentLine;
@@ -134,28 +134,33 @@ public class Distr {
                     recvBuffer, 0, 2, MPI.CHAR, 0);  // ⬤
             System.out.println("["+me+"] SENT ranges: " + Arrays.toString(sendBuff));
             System.out.println("["+me+"] ROOT range from " + sendBuff[0] + " to " + sendBuff[1]);
-
-
-            long attemptsRoot;
             String[] result;
 
             System.out.println("["+me+"] ROOT TEST" );
-            result = Functions.distributedBruteForceGeneratorRoot(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me, progress);
+            result = Functions.distributedBruteForceGeneratorRoot(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me, progress, nodes);
+            t = System.currentTimeMillis() - t0;
             System.out.println("["+me+"] RESULT: " + result[0]);
             System.out.println("["+me+"] LOCAL ATTEMPTS: " + result[1]);
+            SwingUtilities.invokeLater(() -> {//
+                progress.setValue(100);
+                progress.setString("Success");
+            });
 
             // GATHER password & attempts
 
-//            char[] exploded_pwd = new char[];
             long[] total_attempts = new long[nodes];  long[] root_attempts = new long[1]; root_attempts[0] = attempts + Long.parseLong(result[1]);
-//            MPI.COMM_WORLD.Gather( // attempts
-//                    root_attempts, 0, 1, MPI.LONG,
-//                    total_attempts, 0, 1, MPI.LONG, 0);
 
             MPI.COMM_WORLD.Reduce(
                     root_attempts, 0, total_attempts, 0, 1, MPI.LONG, MPI.SUM, 0
             );
+
             System.out.println("["+me+"] TOTAL ATTEMPTS: " + total_attempts[0]);
+            System.out.println("┌──────────────────────────────────────────────┐");
+            System.out.println("│ PASSWORD: " + result[0]);
+            System.out.println("│ ATTEMPTS: " + total_attempts[0]);
+            System.out.println("│ DISTRIBUTED TIME: " + t);
+            System.out.println("│ TOTAL TIME:" + t);
+            System.out.println("└──────────────────────────────────────────────┘");
 
 
 
