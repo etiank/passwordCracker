@@ -362,6 +362,7 @@ public class Functions {
 //                t = System.currentTimeMillis() - t0;
                 System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess /*+ " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get()*/);
 //                Main.enableButtons();
+
                 SwingUtilities.invokeLater(() -> {//
 //                    progress.setValue(100);
 //                    progress.setString("Success");
@@ -373,6 +374,89 @@ public class Functions {
             }
 //            attempts.getAndIncrement();
             attempts++;
+
+            int i = pwd_length - 1;
+            while (i >= 0) {
+                index[i]++;
+
+                if (index[i] < char_set.length) {
+                    // if still same char, update and stop carrying
+                    currentGuess[i] = char_set[index[i]];
+                    break;
+                } else {
+                    // if end of char_set, reset to 0 & increment to next position
+                    if (i == 0) {
+                        // gone through all chars from set
+                        break;
+                    }
+                    index[i] = 0;
+                    currentGuess[i] = char_set[0];
+                    i--;
+                }
+            }
+            // finished range
+            if (index[0] > endIndex) {
+                System.out.println("[" + me + "] Finished range: NOT FOUND");
+                break;
+            }
+        }
+        String strAttempts = String.valueOf(attempts);
+        String[] result = new String[2]; result[0] = ""; result[1] = strAttempts;
+        return result;
+    }
+
+    public static String[] distributedBruteForceGeneratorRoot(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, JProgressBar progress/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
+        System.out.println("["+me+"] ROOT TEST2" );
+        long possible_combs = (long) (Math.pow(char_set.length, (pwd_length-1)) * ((int) endChar - (int) startChar));
+        System.out.println("[" + me + "] Possible combs root: " + possible_combs);
+
+        long attempts = 0;
+        System.out.println("[" + me + "] hash: " + hash);
+        // find indices for the range
+        int startIndex = -1;
+        int endIndex = -1;
+        for (int i = 0; i < char_set.length; i++) {
+            if (char_set[i] == startChar) startIndex = i;
+            if (char_set[i] == endChar) endIndex = i;
+        }
+
+        // initialize index & current guess
+        int[] index = new int[pwd_length];
+        char[] currentGuess = new char[pwd_length];
+        index[0] = startIndex;
+        currentGuess[0] = startChar;
+        for (int i = 1; i < pwd_length; i++) {
+            index[i] = 0;
+            currentGuess[i] = char_set[0];
+        }
+
+        System.out.println("[" + me + "] start " + startChar + " end " + endChar);
+
+        while (index[0] <= endIndex /*&& !found.get()*/) {
+            String strGuess = new String(currentGuess);
+
+            if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
+//                found.set(true);
+                System.out.println("[FOUND] [" + me + "][password]: " + strGuess);
+//                t = System.currentTimeMillis() - t0;
+                System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess /*+ " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get()*/);
+//                Main.enableButtons();
+
+                SwingUtilities.invokeLater(() -> {//
+                    progress.setValue(100);
+                    progress.setString("Success");
+                });
+                String strAttempts = String.valueOf(attempts);
+                String[] result = new String[2]; result[0] = strGuess; result[1] = strAttempts;
+                if (result[0].isEmpty()) result[0] = " ";
+                return result;
+            }
+//            attempts.getAndIncrement();
+            attempts++;
+            int percent = Functions.computeProgress(attempts, possible_combs);
+            SwingUtilities.invokeLater(() -> {
+                progress.setValue(percent);
+            });
 
             int i = pwd_length - 1;
             while (i >= 0) {

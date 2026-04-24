@@ -138,11 +138,14 @@ public class Distr {
 
             long attemptsRoot;
             String[] result;
-            result = Functions.distributedBruteForceGenerator(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me);
+
+            System.out.println("["+me+"] ROOT TEST" );
+            result = Functions.distributedBruteForceGeneratorRoot(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me, progress);
             System.out.println("["+me+"] RESULT: " + result[0]);
             System.out.println("["+me+"] LOCAL ATTEMPTS: " + result[1]);
 
             // GATHER password & attempts
+
 //            char[] exploded_pwd = new char[];
             long[] total_attempts = new long[nodes];  long[] root_attempts = new long[1]; root_attempts[0] = attempts + Long.parseLong(result[1]);
 //            MPI.COMM_WORLD.Gather( // attempts
