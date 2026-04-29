@@ -85,8 +85,8 @@ public class Functions {
 
     /// Needs to take in the pwd_length, char_set, original hash, hasy_type.
     /// Iteratively generate string, hash it and compare it to the orignal hash: andrej's predlog btw
-    public static String bruteForceGenerator(int pwd_length, char[] char_set, String hash, String hash_type, long possible_combs, int attempts, long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
-
+    public static String bruteForceGenerator(int pwd_length, char[] char_set, String hash, String hash_type, long possible_combs, /*long attempts,*/ long currentProgress, JProgressBar progress) throws NoSuchAlgorithmException {
+        long attempts = 0;
         int[] indices = new int[pwd_length]; // initializing
         char[] currentGuess = new char[pwd_length];
         Arrays.fill(currentGuess, char_set[0]); // fill the char arr with the first char in char_set
@@ -243,7 +243,7 @@ public class Functions {
         return password + "\n" + attempts;
     }
 
-    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0) throws NoSuchAlgorithmException {
+    public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0, long attempts_dic, long par_time) throws NoSuchAlgorithmException {
         System.out.println("hash: " + hash);
         // find indices for the range
         int startIndex = -1;
@@ -273,7 +273,16 @@ public class Functions {
                 found.set(true);
                 System.out.println("[FOUND BY THREAD " + nThread + "][password]: " + strGuess);
                 t = System.currentTimeMillis() - t0;
+                long tt = System.currentTimeMillis() - par_time;
                 System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get());
+                System.out.println("┌──────────────────────────────────────────────┐");
+                System.out.println("│ BRUTE FORCE ATTEMPTS: " + attempts.get());
+                System.out.println("│ TOTAL ATTEMPTS: " + ( attempts.get() + attempts_dic ));
+                System.out.println("│ PARALLEL TIME: " + Functions.time(tt));
+                System.out.println("│ TOTAL TIME: " + Functions.time(t));
+                System.out.println("├──────────────────────────────────────────────┤");
+                System.out.println("│ PASSWORD: " + strGuess);
+                System.out.println("└──────────────────────────────────────────────┘");
                 parGUI.enableButtons();
                 SwingUtilities.invokeLater(() -> {//
                     progress.setValue(100);
@@ -335,7 +344,7 @@ public class Functions {
     public static String[] distributedBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, int nodes/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
 
         long attempts = 0;
-        System.out.println("[" + me + "] hash: " + hash);
+//        System.out.println("[" + me + "] hash: " + hash);
         // find indices for the range
         int startIndex = -1;
         int endIndex = -1;
@@ -360,7 +369,7 @@ public class Functions {
             String strGuess = new String(currentGuess);
 
             if (hash_it(strGuess, hash_type).equalsIgnoreCase(hash)) {
-                System.out.println("[FOUND] [" + me + "][password]: " + strGuess);
+                System.out.println("[FOUND][" + me + "][password]: " + strGuess);
 //                t = System.currentTimeMillis() - t0;
                 for (int i = 0; i < nodes; i++) {
                     if (i != me) {
@@ -407,6 +416,7 @@ public class Functions {
             // finished range
             if (index[0] > endIndex) {
                 System.out.println("[" + me + "] Finished range: NOT FOUND");
+//                MPI.Finalize();
                 break;
             }
         }
@@ -416,12 +426,11 @@ public class Functions {
     }
 
     public static String[] distributedBruteForceGeneratorRoot(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, int me, JProgressBar progress, int nodes/*, AtomicLong attempts, AtomicBoolean found, JProgressBar progress, long t, long t0 */) throws NoSuchAlgorithmException {
-        System.out.println("["+me+"] ROOT TEST2" );
         long possible_combs = (long) (Math.pow(char_set.length, (pwd_length-1)) * ((int) endChar - (int) startChar));
         System.out.println("[" + me + "] Possible combs root: " + possible_combs);
 
         long attempts = 0;
-        System.out.println("[" + me + "] hash: " + hash);
+//        System.out.println("[" + me + "] hash: " + hash);
         // find indices for the range
         int startIndex = -1;
         int endIndex = -1;
@@ -463,7 +472,7 @@ public class Functions {
                 });
                 String strAttempts = String.valueOf(attempts);
                 String[] result = new String[2]; result[0] = strGuess; result[1] = strAttempts;
-                if (result[0].isEmpty()) result[0] = " ";
+                if (result[0].isEmpty()) result[0] = "";
                 return result;
             }
 //            attempts.getAndIncrement();

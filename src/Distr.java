@@ -24,7 +24,7 @@ public class Distr {
         ///     What needs to be bcasted?
         ///     Actually scatter
         ///  Send the range
-
+        long total_time = System.currentTimeMillis();
         Pattern pattern = Pattern.compile("^" + char_set + "+$");
         progress.setString("Reading dictionary..");
         char[] char_set_arr = Functions.createCharSet(char_set); // ✓
@@ -79,52 +79,50 @@ public class Distr {
             MPI.Finalize();
         } else {
             /// CHUNKS - RANGES
-            System.out.println("[Dictionary attack] failed. [time]: " + Functions.time(t));
+            System.out.println("[Dictionary attack] failed. [attempts]: " + attempts + " [time]: " + Functions.time(t));
             System.out.println("[Brute force attack] started."); progress.setValue(0);
             progress.setString("Brute force attack..");
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
             int[] chunk_size = Functions.divideChunk(nodes, char_set_arr.length);
             char[][] ranges = Functions.getRangeBounds(char_set_arr, chunk_size);
-            for (int i = 0; i < ranges.length; i++) {
-                System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
-            }
-
-
+//            for (int i = 0; i < ranges.length; i++) {
+//                System.out.println("Ranges: " + ranges[i][0] + " " + ranges[i][1]);
+//            }
 //            System.out.println("ass:\n" + Arrays.toString(Functions.flattenMatrix(ranges)));
-
 
             /// MPJ
 
             // BROADCAST  (thing, offset(prob 0), count, type MPI.INT, who's bcasting 0)
             // pwd_length ✔, char_set ✔, range, hash ✔, hash_type ✔, attempts?, found???, progressbar?????
             // ONLY ARRAYS CAN BE SENT
-            System.out.println("["+me+"] ROOT SENDING");
+            long distr_time = System.currentTimeMillis();
+//            System.out.println("["+me+"] ROOT SENDING");
             int[] pwd_length_buffer = new int[1]; pwd_length_buffer[0] = pwd_length;
             MPI.COMM_WORLD.Bcast(pwd_length_buffer, 0, 1, MPI.INT, 0); // ⬤
-            System.out.println("["+me+"] SENT pwd_length");
+//            System.out.println("["+me+"] SENT pwd_length");
 
             int[] hash_length_buffer = new int[hash.length()]; hash_length_buffer[0] = hash.length();
             MPI.COMM_WORLD.Bcast(hash_length_buffer, 0, 1, MPI.INT, 0); // ⬤
-            System.out.println("["+me+"] SENT hash_length");
+//            System.out.println("["+me+"] SENT hash_length");
 
             char[] hash_buffer = hash.toCharArray();
             MPI.COMM_WORLD.Bcast(hash_buffer, 0, hash.length(), MPI.CHAR, 0); // ⬤
-            System.out.println("["+me+"] SENT hash: " + hash);
+//            System.out.println("["+me+"] SENT hash: " + hash);
 
             int[] char_set_arr_length = new int[1]; char_set_arr_length[0] = char_set_arr.length;
             MPI.COMM_WORLD.Bcast(char_set_arr_length, 0, 1, MPI.INT, 0); // ⬤
-            System.out.println("["+me+"] SENT char_set_length: " + char_set_arr.length);
+//            System.out.println("["+me+"] SENT char_set_length: " + char_set_arr.length);
 
             MPI.COMM_WORLD.Bcast(char_set_arr, 0, char_set_arr.length, MPI.CHAR, 0); // ⬤
-            System.out.println("["+me+"] SENT char_set_arr: " + Arrays.toString(char_set_arr));
+//            System.out.println("["+me+"] SENT char_set_arr: " + Arrays.toString(char_set_arr));
 
             int[] hash_type_length = new int[1]; hash_type_length[0] = hash_type.length();
             MPI.COMM_WORLD.Bcast(hash_type_length, 0, 1, MPI.INT, 0); // ⬤
-            System.out.println("["+me+"] SENT hash_type_length: " + hash_type.length());
+//            System.out.println("["+me+"] SENT hash_type_length: " + hash_type.length());
 
             char[] hash_type_buffer = hash_type.toCharArray();
             MPI.COMM_WORLD.Bcast(hash_type_buffer, 0, hash_type.length(), MPI.CHAR, 0); // ⬤
-            System.out.println("["+me+"] SENT hash_type: " + Arrays.toString(hash_type_buffer));
+//            System.out.println("["+me+"] SENT hash_type: " + Arrays.toString(hash_type_buffer));
 
             // SCATTER
             //send chunksize
@@ -132,51 +130,45 @@ public class Distr {
             MPI.COMM_WORLD.Scatter(
                     sendBuff, 0, 2, MPI.CHAR,
                     recvBuffer, 0, 2, MPI.CHAR, 0);  // ⬤
-            System.out.println("["+me+"] SENT ranges: " + Arrays.toString(sendBuff));
-            System.out.println("["+me+"] ROOT range from " + sendBuff[0] + " to " + sendBuff[1]);
+//            System.out.println("["+me+"] SENT ranges: " + Arrays.toString(sendBuff));
+//            System.out.println("["+me+"] ROOT range from " + sendBuff[0] + " to " + sendBuff[1]);
             String[] result;
 
-            System.out.println("["+me+"] ROOT TEST" );
             result = Functions.distributedBruteForceGeneratorRoot(pwd_length, char_set_arr, sendBuff[0], sendBuff[1], hash, hash_type, me, progress, nodes);
-            t = System.currentTimeMillis() - t0;
+            long dt = System.currentTimeMillis() - distr_time;
+            long tt = System.currentTimeMillis() - total_time;
             System.out.println("["+me+"] RESULT: " + result[0]);
             System.out.println("["+me+"] LOCAL ATTEMPTS: " + result[1]);
             SwingUtilities.invokeLater(() -> {//
                 progress.setValue(100);
-                progress.setString("Success");
+//                progress.setString("Success");
             });
 
             // GATHER password & attempts
 
             long[] total_attempts = new long[nodes];  long[] root_attempts = new long[1]; root_attempts[0] = attempts + Long.parseLong(result[1]);
-
             MPI.COMM_WORLD.Reduce(
                     root_attempts, 0, total_attempts, 0, 1, MPI.LONG, MPI.SUM, 0
             );
+            String password = result[0];
 
-            System.out.println("["+me+"] TOTAL ATTEMPTS: " + total_attempts[0]);
             System.out.println("┌──────────────────────────────────────────────┐");
-            System.out.println("│ PASSWORD: " + result[0]);
-            System.out.println("│ ATTEMPTS: " + total_attempts[0]);
-            System.out.println("│ DISTRIBUTED TIME: " + t);
-            System.out.println("│ TOTAL TIME:" + t);
+            System.out.println("│ BRUTE FORCE ATTEMPTS: " + total_attempts[0]);
+            System.out.println("│ TOTAL ATTEMPTS: " + (total_attempts[0]+(long) attempts));
+            System.out.println("│ DISTRIBUTED TIME: " + Functions.time(dt));
+            System.out.println("│ TOTAL CRACKING TIME: " + Functions.time(tt));
+            System.out.println("├──────────────────────────────────────────────┤");
+            // If root no find password -> Get password with MPI.Recv
+            if(result[0].isEmpty()){
+                Object[] buffer = new Object[1];
+//                System.out.println("RECEIVING PASSWORD");
+                MPI.COMM_WORLD.Recv(buffer, 0, 1, MPI.OBJECT, MPI.ANY_SOURCE, 69);
+//                System.out.println("PASSWORD RECEIVED: " + Arrays.toString(buffer));
+                password = buffer[0].toString();
+            }
+            System.out.println("│ PASSWORD: " + password);
             System.out.println("└──────────────────────────────────────────────┘");
-
-
-
+            Main.enableButtons();
         }
     }
-
-    public static void compute(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH, int me, int nodes){
-
-
-        /// WORKER
-        ///  needs: pwd_length, char_set, starChar, endChar, hash, hash_type, attempts?, found???, progressbar?????
-        ///  Can I make it quit after any of the workera(or root) find the hash? Maybe while loop. Need it for Found
-
-//        public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong
-//        attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0)
-
-    }
-
 }

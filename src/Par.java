@@ -1,3 +1,5 @@
+import mpi.MPI;
+
 import javax.swing.*;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -15,7 +17,7 @@ import java.util.regex.Pattern;
 public class Par {
 
     public static void runPar(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH) throws NoSuchAlgorithmException, IOException {
-
+        long total_time = System.currentTimeMillis();
         System.out.println("[input hash]: " + hash + " \n[hash_type]: " + hash_type + " \n[char_set]: " + char_set + " \n[length]: " + pwd_length + "\n");
         Pattern pattern = Pattern.compile("^" + char_set + "+$");
         progress.setString("Reading dictionary..");
@@ -55,7 +57,7 @@ public class Par {
             if (currentLine.length() != pwd_length) continue; // skip candidates that are not the right length
             if (!pattern.matcher(currentLine).matches())
                 continue; // skip candidates that dont fit the specified char set
-            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
+//            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
             String dict_hash = Functions.hash_it(currentLine, hash_type);
             if (dict_hash.equalsIgnoreCase(hash)) break; // gredol
             attempts++;
@@ -75,7 +77,6 @@ public class Par {
             progress.setString("Success");
             System.out.println("[Dictionary attack] success.\n[pwd]: " + currentLine + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts);
             parGUI.enableButtons();
-
         } else {
 
             ///  PARALLEL
@@ -83,11 +84,14 @@ public class Par {
             // - divide workload into n
             // - use AtomicInteger to increment attempts -> progress
             //      - have one thread for gui only
+            long par_time = System.currentTimeMillis();
 
             int cores = Runtime.getRuntime().availableProcessors()-1; // leaving 1 core for OS*
             ExecutorService pool = Executors.newFixedThreadPool(cores);
 
-            AtomicLong attempts2 = new AtomicLong(attempts);
+//            long dictionary_attempts = new long(attempts);
+            AtomicLong attempts2 = new AtomicLong();
+
             AtomicBoolean found = new AtomicBoolean(false);
             //AtomicReference<String> resultPassword = new AtomicReference<>(null);
 
@@ -127,11 +131,13 @@ public class Par {
                 char endChar = ranges[i][1];
                 int j = i;
 
-                long finalT = t;
+                long finalT = total_time;
+                long par_timeF = par_time;
+                long attemptsF = attempts;
                 pool.submit(() -> {
                     System.out.println("Thread[" + j + "] starting");
                     try {
-                        test.set(Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, attempts2, j, found, progress, finalT, t0));
+                        test.set(Functions.parallelBruteForceGenerator(pwd_length, char_set_arr, startChar, endChar, hash, hash_type, attempts2, j, found, progress, finalT, t0, attemptsF, par_timeF));
                         System.out.println("Thread[" + j + "] finished cooking");
                     } catch (NoSuchAlgorithmException e) {
                         e.printStackTrace();
@@ -151,7 +157,16 @@ public class Par {
                     throw new RuntimeException(e);
             }
             pool.shutdown();
-            /// ⚠⚠⚠️
+            parGUI.enableButtons();
+            /// ⚠⚠⚠
+//            System.out.println("┌──────────────────────────────────────────────┐");
+//            System.out.println("│ PARALLEL ATTEMPTS: " + );
+//            System.out.println("│ TOTAL ATTEMPTS: " + (total_attempts[0]+(long) attempts));
+//            System.out.println("│ PARALLEL TIME: " + Functions.time(dt));
+//            System.out.println("│ TOTAL CRACKING TIME: " + Functions.time(tt));
+//            System.out.println("├──────────────────────────────────────────────┤");
+//            System.out.println("│ PASSWORD: " + password);
+//            System.out.println("└──────────────────────────────────────────────┘");
 
 
         }

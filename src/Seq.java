@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Seq {
 
     public static void runSeq(String hash, String hash_type, String char_set, int pwd_length, JProgressBar progress, String PATH) throws NoSuchAlgorithmException, IOException {
-
+        long total_time = System.currentTimeMillis();
         //String PATH = "C:\\Users\\Etian\\passwordCracker\\rockyou.txt";
         //String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
         System.out.println("[input hash]: " + hash + " \n[hash_type]: " + hash_type + " \n[char_set]: " + char_set + " \n[length]: " + pwd_length +"\n");
@@ -46,7 +46,7 @@ public class Seq {
 
         progress.setString("Dictionary attack..");
 
-        int attempts = 1;
+        long attempts = 1;
         long t0 = System.currentTimeMillis(); long t;
 
         // THE Loop
@@ -56,7 +56,7 @@ public class Seq {
             if (!((currentLine = rdr.readLine()) != null)) break; // break when reached end of dictionary
             if (currentLine.length() != pwd_length) continue; // skip candidates that are not the right length
             if (!pattern.matcher(currentLine).matches()) continue; // skip candidates that dont fit the specified char set
-            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
+//            System.out.println("[" + attempts + "] " + "Dictionary entry: " + currentLine);
             String dict_hash = Functions.hash_it(currentLine, hash_type);
             //System.out.println("input hash: "+hash);
             //System.out.println("Hashed dictionary entry: " + dict_hash);
@@ -104,14 +104,26 @@ public class Seq {
             progress.setString("Brute force attack..");
             currentprogress = 0;
             System.out.println("[possible combinations]: " + possible_combs + ". Please be patient");
+
             /// BRUTE FORCING
-            String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, attempts, currentprogress, progress);
-            t = System.currentTimeMillis() - t0;
+            long cracking_time = System.currentTimeMillis();
+            String pws_and_attempt = Functions.bruteForceGenerator(pwd_length, char_set_arr, hash, hash_type, possible_combs, currentprogress, progress);
+            t = System.currentTimeMillis() - total_time;
+            long tt = System.currentTimeMillis() - cracking_time;
             // get password, attempts
             progress.setValue(100); progress.setString("Success");
             String[] output = pws_and_attempt.split("\n");
             System.out.println("[Brute force attack] success.\n[pwd]: " + output[0] + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + output[1]);
             seqGUI.enableButtons();
+            long tmp = Long.parseLong(output[1]);
+            System.out.println("┌──────────────────────────────────────────────┐");
+            System.out.println("│ BRUTE FORCE ATTEMPTS: " + output[1]);
+            System.out.println("│ TOTAL ATTEMPTS: " + ( tmp + attempts));
+            System.out.println("│ SEQUENTIAL TIME: " + Functions.time(tt));
+            System.out.println("│ TOTAL TIME: " + Functions.time(t));
+            System.out.println("├──────────────────────────────────────────────┤");
+            System.out.println("│ PASSWORD: " + output[0]);
+            System.out.println("└──────────────────────────────────────────────┘");
 
         }
 

@@ -11,6 +11,7 @@ public class parGUI {
     private static JButton button; private static JButton dictionaryButton;
 
     public static void GUI() {
+        int available_cores = Runtime.getRuntime().availableProcessors()-1;
         JFrame frame = new JFrame("Brute Force Password Cracker (Parallel)");
         frame.setSize(600, 200);
         frame.setLocationRelativeTo(null); // na sredi ekrana ce se prav spomnim
@@ -47,15 +48,18 @@ public class parGUI {
         panel.add(new JLabel("Progress:")); panel.add(progress);
         panel.add(new JLabel("Select dictionary:")); panel.add(dictionaryButton);
 
+
         // run button
         button.addActionListener(e -> {
             String hash = hash_field.getText();
             String char_set2 = char_set.getText();
+            int char_set3 = Functions.createCharSet(char_set2).length;
+            System.out.println("Ass: " + char_set3);
             System.out.println("[char set]:"+char_set2);
             int pwd_length = length_slider.getValue();
             progress.setValue(0); // restart
 
-            if (pwd_length != 0 && !char_set2.isEmpty()){
+            if (pwd_length != 0 && !char_set2.isEmpty() && !(available_cores > char_set3)){
                 if (radio_md5.isSelected()){
                     button.setEnabled(false); dictionaryButton.setEnabled(false);
                     new Thread(() -> { // rabi thread kr ce ne samo zamrzne
@@ -86,7 +90,7 @@ public class parGUI {
                 }
 
             } else {
-                System.out.println("[ERROR] Password length and character set cannot be null.\n");
+                System.out.println("[ERROR] Password length and character set cannot be null. Character set cannot be smaller than the amount of cores: " + available_cores + "\n");
             }
         });
 
