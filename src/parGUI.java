@@ -7,13 +7,13 @@ import java.security.NoSuchAlgorithmException;
 
 public class parGUI {
 
-    static String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
+    static String PATH = "dict.txt";
     private static JButton button; private static JButton dictionaryButton;
 
     public static void GUI() {
         int available_cores = Runtime.getRuntime().availableProcessors()-1;
         JFrame frame = new JFrame("Brute Force Password Cracker (Parallel)");
-        frame.setSize(600, 200);
+        frame.setSize(650, 200);
         frame.setLocationRelativeTo(null); // na sredi ekrana ce se prav spomnim
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -21,13 +21,13 @@ public class parGUI {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("84e3bc8f2edc71abb4e22e1163e921c9", 40); // "kljen" MD5
+        JTextField hash_field = new JTextField("", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[a-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]  [0-9A-Za-z]
-        JSlider length_slider = new JSlider(0,20,5);
+        JTextField char_set = new JTextField("[0-9A-Za-z!@#$%^&*()_\\-+=\\[\\]{};:'\",.<>/?\\\\|`~]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]  [0-9A-Za-z]
+        JSlider length_slider = new JSlider(0,20,10);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);
@@ -37,7 +37,7 @@ public class parGUI {
         JProgressBar progress = new JProgressBar(0,100);
         progress.setStringPainted(true);
         button = new JButton("Crack ▶");
-        dictionaryButton = new JButton("rockyou.txt");
+        dictionaryButton = new JButton("Dictionary");
 
         // ADDING TO PANEL
         panel.add(new JLabel("Enter password hash:")); panel.add(hash_field);

@@ -8,14 +8,14 @@ import java.security.NoSuchAlgorithmException;
 
 // Maybe add `-Djava.awt.headless=false` in the VM options instead of in the code
 /*"kljen"
-        MD5:        84e3bc8f2edc71abb4e22e1163e921c9
+            MD5:        84e3bc8f2edc71abb4e22e1163e921c9
         SHA-256:    84272a03a83349e39109d3fdb12cfbc746ffdc6968a180145a6dc7653f15cc63 */
 public class Main {
 
 
     public static void main(String[] args) {
         ///  SELECT RUN MODE BY CHANGING THIS VALUE
-        int input = 2;
+        int input = 1;
         ///  1 : Sequential
         ///  2 : Parallel
         ///  3 : Distributed
@@ -147,12 +147,12 @@ public class Main {
         MPI.Finalize();
     }
 
-    static String PATH = "/home/ket/IdeaProjects/passwordCracker/rockyou.txt";
+    static String PATH = "dict.txt";
     private static JButton button; private static JButton dictionaryButton;
 
     public static void GUI_MPJ(int nodes, int me){ // ROOT
         JFrame frame = new JFrame("Brute Force Password Cracker (Distributed)");
-        frame.setSize(600, 200);
+        frame.setSize(650, 200);
         frame.setLocationRelativeTo(null); // na sredi ekrana ce se prav spomnim
         frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
@@ -160,14 +160,14 @@ public class Main {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("84e3bc8f2edc71abb4e22e1163e921c9", 40); // "kljen" MD5
+        JTextField hash_field = new JTextField("", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[a-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
+        JTextField char_set = new JTextField("[0-9A-Za-z!@#$%^&*()_\\-+=\\[\\]{};:'\",.<>/?\\\\|`~]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         //char_set.setToolTipText(". - all [a-z] - lowercase [A-Z] - uppercase [0-9] - numerical");
-        JSlider length_slider = new JSlider(0,20,5);
+        JSlider length_slider = new JSlider(0,20,10);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);
@@ -177,7 +177,7 @@ public class Main {
         JProgressBar progress = new JProgressBar(0,100);
         progress.setStringPainted(true);
         button = new JButton("Crack ▶");
-        dictionaryButton = new JButton("rockyou.txt");
+        dictionaryButton = new JButton("Dictionary");
 
         // ADDING TO PANEL
         panel.add(new JLabel("Enter password hash:")); panel.add(hash_field);

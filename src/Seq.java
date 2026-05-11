@@ -35,7 +35,7 @@ public class Seq {
                 }
             }
         }
-        // System.out.println("[Total lines]: "+ lines);
+         System.out.println("[Total lines]: "+ lines);
 
 
         // BUFFERED READER SET-UP

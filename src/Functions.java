@@ -244,7 +244,7 @@ public class Functions {
     }
 
     public static String parallelBruteForceGenerator(int pwd_length, char[] char_set, char startChar, char endChar, String hash, String hash_type, AtomicLong attempts, int nThread, AtomicBoolean found, JProgressBar progress, long t, long t0, long attempts_dic, long par_time) throws NoSuchAlgorithmException {
-        System.out.println("hash: " + hash);
+//        System.out.println("hash: " + hash);
         // find indices for the range
         int startIndex = -1;
         int endIndex = -1;
@@ -274,7 +274,7 @@ public class Functions {
                 System.out.println("[FOUND BY THREAD " + nThread + "][password]: " + strGuess);
                 t = System.currentTimeMillis() - t0;
                 long tt = System.currentTimeMillis() - par_time;
-                System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get());
+//                System.out.println("[Brute force attack] success.\n[pwd]: " + strGuess + " \n[time]: " + Functions.time(t) + " \n[attempts]: " + attempts.get());
                 System.out.println("┌──────────────────────────────────────────────┐");
                 System.out.println("│ BRUTE FORCE ATTEMPTS: " + attempts.get());
                 System.out.println("│ TOTAL ATTEMPTS: " + ( attempts.get() + attempts_dic ));
@@ -313,6 +313,9 @@ public class Functions {
             }
             // finished range
             if (index[0] > endIndex) {
+                long tt = System.currentTimeMillis() - par_time;
+                t = System.currentTimeMillis() - t0;
+                System.out.println("[" + nThread + "] Password: [NOT FOUND]\n[TOT_TIME]: " + Functions.time(t) + " [PAR_TIME]: " + Functions.time(tt) + " [TOT_ATMPTS]: " + (attempts.get()+attempts_dic) + " [BR_FRC_ATMPTS]: " + attempts.get());
                 break;
             }
         }
