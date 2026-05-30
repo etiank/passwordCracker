@@ -41,8 +41,12 @@ public class Functions {
         if (seconds<60) return seconds + "s " + (ms % 1000) + "ms.";
 
         long minutes = seconds / 60;
-        if (minutes < 60) return minutes + " min " + (seconds % 60) + "s " + (ms % 1000) + "ms";
-        return "";
+        if (minutes < 60) return minutes + " min " + (seconds % 60) + " s " + (ms % 1000) + " m.s";
+
+        long hours = minutes / 60;
+        if (hours < 60) return hours + " h " + (minutes % 60) + " min " + (seconds % 60) + "s " + (ms % 1000) + "ms.";
+        return String.valueOf(ms);
+
     }
 
     /// Gets the regex-style char set definition, expands it and returns a char array ✓
@@ -278,7 +282,7 @@ public class Functions {
                 System.out.println("┌──────────────────────────────────────────────┐");
                 System.out.println("│ BRUTE FORCE ATTEMPTS: " + attempts.get());
                 System.out.println("│ TOTAL ATTEMPTS: " + ( attempts.get() + attempts_dic ));
-                System.out.println("│ PARALLEL TIME: " + Functions.time(tt));
+                System.out.println("│ PARALLEL TIME: " + /*Functions.time(tt)*/ tt + " ms");
                 System.out.println("│ TOTAL TIME: " + Functions.time(t));
                 System.out.println("├──────────────────────────────────────────────┤");
                 System.out.println("│ PASSWORD: " + strGuess);

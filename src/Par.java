@@ -152,7 +152,7 @@ public class Par {
                 });
             }
             try {
-                pool.awaitTermination(60, TimeUnit.MINUTES);
+                pool.awaitTermination(60, TimeUnit.HOURS);
             } catch (InterruptedException e) {
                     throw new RuntimeException(e);
             }

@@ -15,7 +15,7 @@ public class Main {
 
     public static void main(String[] args) {
         ///  SELECT RUN MODE BY CHANGING THIS VALUE
-        int input = 1;
+        int input = 3;
         ///  1 : Sequential
         ///  2 : Parallel
         ///  3 : Distributed
@@ -160,14 +160,14 @@ public class Main {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
+        JTextField hash_field = new JTextField("93373177c3a3b96273264e256eb1b94a", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField("[0-9A-Za-z!@#$%^&*()_\\-+=\\[\\]{};:'\",.<>/?\\\\|`~]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
+        JTextField char_set = new JTextField("[a-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         //char_set.setToolTipText(". - all [a-z] - lowercase [A-Z] - uppercase [0-9] - numerical");
-        JSlider length_slider = new JSlider(0,20,10);
+        JSlider length_slider = new JSlider(0,20,5);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);

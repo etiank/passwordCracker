@@ -155,7 +155,7 @@ public class Distr {
             System.out.println("┌──────────────────────────────────────────────┐");
             System.out.println("│ BRUTE FORCE ATTEMPTS: " + total_attempts[0]);
             System.out.println("│ TOTAL ATTEMPTS: " + (total_attempts[0]+(long) attempts));
-            System.out.println("│ DISTRIBUTED TIME: " + Functions.time(dt));
+            System.out.println("│ DISTRIBUTED TIME: " + /*Functions.time(dt)*/ dt + " ms");
             System.out.println("│ TOTAL CRACKING TIME: " + Functions.time(tt));
             System.out.println("├──────────────────────────────────────────────┤");
             // If root no find password -> Get password with MPI.Recv
