@@ -20,14 +20,14 @@ public class seqGUI {
         panel.setAlignmentX(Component.LEFT_ALIGNMENT);
 
         // DEFINING ELEMENTS
-        JTextField hash_field = new JTextField("65f09c77c73f30d2f90d176f1116ebcf", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
+        JTextField hash_field = new JTextField("", 40); // 84e3bc8f2edc71abb4e22e1163e921c9 "kljen" MD5
         JRadioButton radio_md5 = new JRadioButton("MD5");
         JRadioButton radio_sha256 = new JRadioButton("SHA-256");
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(radio_md5); buttonGroup.add(radio_sha256);
-        JTextField char_set = new JTextField(".", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
+        JTextField char_set = new JTextField("[0-9A-Za-z]", 25); // [0-9A-Za-z!@#$%^&*()_\-+=\[\]{};:'",.<>/?\\|`~]
         //char_set.setToolTipText(". - all [a-z] - lowercase [A-Z] - uppercase [0-9] - numerical");
-        JSlider length_slider = new JSlider(0,20,6);
+        JSlider length_slider = new JSlider(0,20,10);
         length_slider.setMajorTickSpacing(2);
         length_slider.setMinorTickSpacing(1);
         length_slider.setPaintTicks(true);

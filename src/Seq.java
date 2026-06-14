@@ -119,7 +119,7 @@ public class Seq {
             System.out.println("┌──────────────────────────────────────────────┐");
             System.out.println("│ BRUTE FORCE ATTEMPTS: " + output[1]);
             System.out.println("│ TOTAL ATTEMPTS: " + ( tmp + attempts));
-            System.out.println("│ SEQUENTIAL TIME: " + /*Functions.time(tt)*/ tt + " ms");
+            System.out.println("│ SEQUENTIAL TIME: " + Functions.time(tt));
             System.out.println("│ TOTAL TIME: " + Functions.time(t));
             System.out.println("├──────────────────────────────────────────────┤");
             System.out.println("│ PASSWORD: " + output[0]);
